@@ -73,7 +73,7 @@ export default function Home() {
 
           <div className="mb-8 hover:scale-105 transition-transform">
             <img
-              src="/logo.jpg"
+              src="/logo.png"
               alt="UniAGORA Logo"
               className="w-24 h-24 md:w-32 md:h-32 object-contain rounded-2xl shadow-xl border-4 border-white"
             />

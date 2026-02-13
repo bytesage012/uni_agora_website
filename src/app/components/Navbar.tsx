@@ -142,7 +142,7 @@ export default function Navbar() {
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-3 group">
                     <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center overflow-hidden shadow-sm border border-zinc-100 group-hover:scale-110 transition-transform">
-                        <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" />
+                        <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
                     </div>
                     <span className="text-2xl font-black text-primary tracking-tighter italic">UniAGORA</span>
                 </Link>
