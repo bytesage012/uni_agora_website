@@ -190,9 +190,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
     return (
         <div className="min-h-screen bg-background flex flex-col font-sans">
-            <Navbar />
-
-            <main className="flex-grow flex flex-col h-[calc(100vh-80px)] overflow-hidden">
+            <main className="flex-grow flex flex-col h-screen overflow-hidden">
                 {/* Chat Header */}
                 <header className="bg-white border-b border-border-soft px-8 py-4 flex items-center justify-between shadow-sm z-10">
                     <div className="flex items-center gap-4">

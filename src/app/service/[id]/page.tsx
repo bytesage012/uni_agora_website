@@ -176,20 +176,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
         }
     };
 
-    const handleWhatsAppChat = () => {
-        if (!service) return;
 
-        const phoneNumber = service.profiles.phone_number?.replace(/\+/g, "").replace(/\s/g, "");
-        if (!phoneNumber) {
-            alert("This freelancer hasn't provided a valid WhatsApp number.");
-            return;
-        }
-
-        const message = encodeURIComponent(
-            `Hi ${service.profiles.full_name}, I saw your listing for "${service.title}" on UniAGORA and I am interested!`
-        );
-        window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
-    };
 
     if (loading) {
         return (
@@ -440,7 +427,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                                             }
                                         } catch (err) {
                                             console.error("Error starting chat:", err);
-                                            alert("Contacting merchant via WhatsApp is currently recommended.");
+                                            alert("Could not start a conversation. Please try again later.");
                                         } finally {
                                             setLoading(false);
                                         }
@@ -463,17 +450,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                                 </Link>
                             )}
 
-                            {currentUser?.id !== service.user_id && (
-                                <button
-                                    onClick={handleWhatsAppChat}
-                                    className="w-full py-3.5 bg-[#25D366] text-white font-bold text-sm rounded-2xl hover:bg-[#20bd5a] hover:scale-[1.02] shadow-lg shadow-[#25d366]/20 transition-all flex items-center justify-center gap-2 mb-6"
-                                >
-                                    <div className="relative w-5 h-5 flex items-center justify-center">
-                                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="" className="w-full h-full animate-pulse brightness-0 invert" />
-                                    </div>
-                                    Chat on WhatsApp
-                                </button>
-                            )}
+
 
                             {currentUser?.id === service.user_id && (
                                 <div className="bg-zinc-100 p-4 rounded-2xl border border-zinc-200 flex items-center gap-3 mb-6">
@@ -533,7 +510,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                                     router.push(`/messages/${convId}`);
                                 }
                             } catch {
-                                handleWhatsAppChat();
+                                alert("Could not contact merchant. Please check your connection.");
                             }
                         }}
                         className="w-full py-6 bg-primary text-white font-black text-xl rounded-3xl shadow-[0_20px_50px_-12px_rgba(79,70,229,0.5)] active:scale-95 transition-all flex items-center justify-center gap-3 border-4 border-white"

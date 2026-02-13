@@ -21,8 +21,9 @@ export default function SignupPage() {
     const [formData, setFormData] = useState({
         fullName: "",
         email: "",
-        whatsappNumber: "",
+        phoneNumber: "",
         password: "",
+        university: "",
     });
 
     // UI State
@@ -72,8 +73,8 @@ export default function SignupPage() {
             return;
         }
 
-        if (!validatePhone(formData.whatsappNumber)) {
-            setError("WhatsApp number must be exactly 11 digits.");
+        if (!validatePhone(formData.phoneNumber)) {
+            setError("Phone number must be exactly 11 digits.");
             setLoading(false);
             return;
         }
@@ -101,7 +102,7 @@ export default function SignupPage() {
                         {
                             id: authData.user.id,
                             full_name: formData.fullName,
-                            phone_number: formatPhoneNumber(formData.whatsappNumber),
+                            phone_number: formatPhoneNumber(formData.phoneNumber),
                             university: "Unspecified University", // General default
                             is_freelancer: false,
                         },
@@ -207,27 +208,27 @@ export default function SignupPage() {
                         />
                     </div>
 
-                    {/* WhatsApp Number */}
+                    {/* Phone Number */}
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-primary ml-1">WhatsApp Number</label>
+                        <label className="text-sm font-bold text-primary ml-1">Phone Number</label>
                         <input
                             required
                             type="tel"
                             maxLength={11}
                             placeholder="080..."
                             className="w-full p-4 bg-bg-soft/50 border border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all"
-                            value={formData.whatsappNumber}
+                            value={formData.phoneNumber}
                             onChange={(e) => {
                                 const value = e.target.value.replace(/\D/g, "");
-                                setFormData({ ...formData, whatsappNumber: value });
+                                setFormData({ ...formData, phoneNumber: value });
                             }}
                         />
                         <p className="text-[11px] font-bold text-zinc-400 ml-1 uppercase tracking-wider">
-                            Used for clients to contact you
+                            Used for students to contact you
                         </p>
                     </div>
 
-                    {/* University (Locked) */}
+                    {/* University */}
                     <div className="space-y-2">
                         <label className="text-sm font-bold text-primary ml-1">University</label>
                         <input

@@ -39,11 +39,15 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     const categories = [
+        "Writing & Translation",
         "Graphic Design",
-        "Writing",
-        "Tutoring",
-        "Photography",
-        "Tech & Repairs"
+        "Tutoring & Lessons",
+        "Tech & Programming",
+        "Photography & Video",
+        "Fashion & Style",
+        "Food & Groceries",
+        "Beauty & Care",
+        "Repairs & Maintenance"
     ];
 
     useEffect(() => {

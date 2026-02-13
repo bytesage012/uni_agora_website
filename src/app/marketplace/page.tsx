@@ -77,16 +77,24 @@ function MarketplaceContent() {
     const categories = [
         "All",
         "Graphic Design",
-        "Writing",
-        "Tutoring",
-        "Tech & Repairs",
-        "Photography"
+        "Writing & Translation",
+        "Tutoring & Lessons",
+        "Tech & Programming",
+        "Photography & Video",
+        "Fashion & Style",
+        "Food & Groceries",
+        "Beauty & Care",
+        "Repairs & Maintenance"
     ];
 
     // Map display labels to filter values if needed, but here they match create-service dropdown
     const getCategoryLabel = (cat: string) => {
-        if (cat === "Tech & Repairs") return "Tech";
+        if (cat === "Tech & Programming") return "Tech";
         if (cat === "Graphic Design") return "Design";
+        if (cat === "Writing & Translation") return "Writing";
+        if (cat === "Tutoring & Lessons") return "Tutoring";
+        if (cat === "Repairs & Maintenance") return "Repairs";
+        if (cat === "Photography & Video") return "Photo/Video";
         return cat;
     };
 

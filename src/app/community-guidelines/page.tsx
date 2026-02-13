@@ -1,5 +1,6 @@
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import Link from "next/link";
 import {
     Users,
     ShieldAlert,
@@ -106,11 +107,11 @@ export default function CommunityGuidelines() {
                 <section className="w-full py-20 text-center">
                     <div className="max-w-xl mx-auto px-4">
                         <h3 className="text-2xl font-bold text-primary mb-8">
-                            Stay updated with the latest campus opportunities and safety tips.
+                            Join the conversation and stay updated with the latest campus opportunities and safety tips.
                         </h3>
-                        <a href="https://chat.whatsapp.com/example" target="_blank" rel="noopener noreferrer" className="px-10 py-5 bg-green-500 hover:bg-green-600 text-white font-black text-lg rounded-2xl shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-3 mx-auto">
-                            <MessageCircle size={24} /> Join our Community
-                        </a>
+                        <Link href="/signup" className="px-10 py-5 bg-primary hover:bg-green-900 text-white font-black text-lg rounded-2xl shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-3 mx-auto max-w-sm">
+                            <MessageCircle size={24} /> Join our Marketplace Community
+                        </Link>
                     </div>
                 </section>
             </main>

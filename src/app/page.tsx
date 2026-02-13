@@ -31,8 +31,8 @@ export default function Home() {
     { title: "Graphic Design", icon: <Camera size={24} />, count: "32+ Freelancers" },
     { title: "Tutoring & Lessons", icon: <BookOpen size={24} />, count: "60+ Tutors" },
     { title: "Tech & Programming", icon: <Monitor size={24} />, count: "28+ Developers" },
-    { title: "Marketing & Sales", icon: <Search size={24} />, count: "15+ Experts" },
-    { title: "Product Marketplace", icon: <ShoppingBag size={24} />, count: "100+ Items" },
+    { title: "Fashion & Style", icon: <ShoppingBag size={24} />, count: "20+ Designers" },
+    { title: "Food & Groceries", icon: <ShoppingBag size={24} />, count: "15+ Vendors" },
   ];
 
   const steps = [
@@ -70,6 +70,14 @@ export default function Home() {
         <section className="relative overflow-hidden w-full max-w-6xl mx-auto px-4 py-12 md:py-24 lg:py-32 flex flex-col items-center text-center">
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-accent/5 rounded-full blur-3xl -z-10"></div>
           <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-10"></div>
+
+          <div className="mb-8 hover:scale-105 transition-transform">
+            <img
+              src="/logo.jpg"
+              alt="UniAGORA Logo"
+              className="w-24 h-24 md:w-32 md:h-32 object-contain rounded-2xl shadow-xl border-4 border-white"
+            />
+          </div>
 
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold uppercase tracking-wider mb-6 border border-accent/20">
             <Star size={12} className="fill-accent" />

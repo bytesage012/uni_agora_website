@@ -26,7 +26,8 @@ export default function EditProfilePage() {
 
     const [formData, setFormData] = useState({
         fullName: "",
-        whatsappNumber: "",
+        phoneNumber: "",
+        university: "",
     });
 
     useEffect(() => {
@@ -39,7 +40,7 @@ export default function EditProfilePage() {
 
             const { data, error } = await supabase
                 .from("profiles")
-                .select("full_name, phone_number")
+                .select("full_name, phone_number, university")
                 .eq("id", session.user.id)
                 .single();
 
@@ -55,7 +56,8 @@ export default function EditProfilePage() {
 
                 setFormData({
                     fullName: data.full_name || "",
-                    whatsappNumber: displayPhone,
+                    phoneNumber: displayPhone,
+                    university: data.university || "",
                 });
             }
             setLoading(false);
@@ -82,8 +84,8 @@ export default function EditProfilePage() {
         setSaving(true);
         setError(null);
 
-        if (!validatePhone(formData.whatsappNumber)) {
-            setError("Please enter a valid 11-digit WhatsApp number.");
+        if (!validatePhone(formData.phoneNumber)) {
+            setError("Please enter a valid 11-digit phone number.");
             setSaving(false);
             return;
         }
@@ -96,7 +98,8 @@ export default function EditProfilePage() {
                 .from("profiles")
                 .update({
                     full_name: formData.fullName,
-                    phone_number: formatPhoneNumber(formData.whatsappNumber),
+                    phone_number: formatPhoneNumber(formData.phoneNumber),
+                    university: formData.university,
                 })
                 .eq("id", session.user.id);
 
@@ -174,34 +177,36 @@ export default function EditProfilePage() {
                             />
                         </div>
 
-                        {/* WhatsApp Number */}
+                        {/* Phone Number */}
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-primary ml-1 flex items-center gap-2">
-                                <Phone size={16} /> WhatsApp Number
+                                <Phone size={16} /> Phone Number
                             </label>
                             <input
                                 required
                                 type="tel"
                                 placeholder="e.g. 08123456789"
                                 className="w-full p-4 bg-bg-soft/50 border border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all font-medium"
-                                value={formData.whatsappNumber}
-                                onChange={(e) => setFormData({ ...formData, whatsappNumber: e.target.value })}
+                                value={formData.phoneNumber}
+                                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                             />
                             <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest ml-1">
-                                MUST BE 11 DIGITS. SAVED AS +234 AUTOMATICALLY.
+                                MUST BE 11 DIGITS. USED FOR CAMPUS-WIDE CONTACT.
                             </p>
                         </div>
 
-                        {/* University (Disabled) */}
-                        <div className="space-y-2 opacity-60 cursor-not-allowed">
+                        {/* University */}
+                        <div className="space-y-2">
                             <label className="text-sm font-bold text-primary ml-1 flex items-center gap-2">
                                 <MapPin size={16} /> University
                             </label>
                             <input
-                                disabled
+                                required
                                 type="text"
-                                value="University of Ilorin"
-                                className="w-full p-4 bg-zinc-100 border border-transparent rounded-2xl font-medium cursor-not-allowed"
+                                placeholder="e.g. University of Ilorin"
+                                className="w-full p-4 bg-bg-soft/50 border border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all font-medium"
+                                value={formData.university}
+                                onChange={(e) => setFormData({ ...formData, university: e.target.value })}
                             />
                         </div>
 

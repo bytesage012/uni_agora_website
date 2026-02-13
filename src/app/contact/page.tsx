@@ -24,22 +24,10 @@ export default function ContactPage() {
 
                 {/* Contact Cards Section */}
                 <section className="w-full py-12 bg-white">
-                    <div className="max-w-4xl mx-auto px-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* WhatsApp Card */}
-                            <div className="p-8 bg-bg-soft/30 rounded-3xl border-2 border-primary/5 hover:border-primary/20 transition-all flex flex-col items-center text-center">
-                                <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-6 text-green-600">
-                                    <MessageCircle size={40} />
-                                </div>
-                                <h3 className="text-2xl font-bold text-primary mb-2">WhatsApp Support</h3>
-                                <p className="text-zinc-600 mb-8">Instant chat for quick resolutions and inquiries.</p>
-                                <a href="https://wa.me/yournumber" target="_blank" rel="noopener noreferrer" className="w-full py-5 bg-[#25D366] hover:bg-[#20bd5c] text-white font-black rounded-2xl shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3">
-                                    <MessageCircle size={24} fill="white" /> Chat with Admin
-                                </a>
-                            </div>
-
+                    <div className="max-w-2xl mx-auto px-4">
+                        <div className="flex flex-col items-center">
                             {/* Email Card */}
-                            <div className="p-8 bg-bg-soft/30 rounded-3xl border-2 border-primary/5 hover:border-primary/20 transition-all flex flex-col items-center text-center">
+                            <div className="w-full p-8 bg-bg-soft/30 rounded-3xl border-2 border-primary/5 hover:border-primary/20 transition-all flex flex-col items-center text-center">
                                 <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-6 text-blue-600">
                                     <Mail size={40} />
                                 </div>

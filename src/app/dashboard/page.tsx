@@ -10,7 +10,13 @@ import {
     Plus,
     ExternalLink,
     Loader2,
-    Briefcase
+    Briefcase,
+    MessageSquare,
+    Users,
+    AlertCircle,
+    CheckCircle2,
+    ChevronRight,
+    Search
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
@@ -18,12 +24,10 @@ import Link from "next/link";
 export default function DashboardPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
-    const [profile, setProfile] = useState<{
-        full_name: string;
-        is_freelancer: boolean;
-        image_url?: string;
-    } | null>(null);
+    const [profile, setProfile] = useState<any>(null);
     const [stats, setStats] = useState({ serviceCount: 0 });
+    const [recentConversations, setRecentConversations] = useState<any[]>([]);
+    const [recentPosts, setRecentPosts] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchProfileAndStats = async () => {
@@ -51,6 +55,60 @@ export default function DashboardPage() {
 
                 setStats({ serviceCount: count || 0 });
             }
+
+            // Fetch recent conversations
+            const { data: participants } = await supabase
+                .from("conversation_participants")
+                .select("conversation_id")
+                .eq("user_id", session.user.id);
+
+            if (participants && participants.length > 0) {
+                const convIds = participants.map(p => p.conversation_id);
+
+                // Fetch other participants for these conversations
+                const { data: others } = await supabase
+                    .from("conversation_participants")
+                    .select(`
+                        conversation_id,
+                        profiles (
+                            full_name
+                        )
+                    `)
+                    .in("conversation_id", convIds)
+                    .neq("user_id", session.user.id);
+
+                const { data: convos } = await supabase
+                    .from("conversations")
+                    .select("*")
+                    .in("id", convIds)
+                    .order("updated_at", { ascending: false })
+                    .limit(3);
+
+                const enriched = (convos || []).map(c => {
+                    const other = others?.find(o => o.conversation_id === c.id);
+                    const profileRec = other?.profiles as any;
+                    const name = Array.isArray(profileRec)
+                        ? profileRec[0]?.full_name
+                        : profileRec?.full_name;
+
+                    return {
+                        ...c,
+                        other_participant_name: name || 'Conversation'
+                    };
+                });
+
+                setRecentConversations(enriched);
+            }
+
+            // Fetch user's recent posts
+            const { data: posts } = await supabase
+                .from("community_posts")
+                .select("*")
+                .eq("user_id", session.user.id)
+                .order("created_at", { ascending: false })
+                .limit(2);
+
+            setRecentPosts(posts || []);
 
             setLoading(false);
         };
@@ -96,6 +154,26 @@ export default function DashboardPage() {
                         </Link>
                     </div>
                 </header>
+
+                {/* Verification Alert */}
+                {profile?.verification_status !== 'verified' && (
+                    <div className="mb-12 bg-amber-50 border border-amber-100 p-6 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+                        <div className="flex items-center gap-4 text-amber-700">
+                            <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center">
+                                <AlertCircle size={24} />
+                            </div>
+                            <div>
+                                <h4 className="text-lg font-black tracking-tight">{profile?.verification_status === 'pending' ? 'Verification Pending' : 'Account Unverified'}</h4>
+                                <p className="text-sm font-medium opacity-80">{profile?.verification_status === 'pending' ? 'Our team is currently reviewing your documents. We will notify you once approved.' : 'Verify your student status to gain trust and unlock all features.'}</p>
+                            </div>
+                        </div>
+                        {profile?.verification_status !== 'pending' && (
+                            <Link href="/profile" className="px-6 py-3 bg-amber-600 text-white font-black rounded-xl hover:bg-amber-700 transition-colors whitespace-nowrap">
+                                Get Verified Now
+                            </Link>
+                        )}
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* Primary Stats */}
@@ -180,6 +258,76 @@ export default function DashboardPage() {
                             </Link>
                         </div>
                     )}
+
+                    {/* Recent Conversations */}
+                    <div className="md:col-span-2 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-2xl font-black text-primary flex items-center gap-2">
+                                <MessageSquare className="text-accent" /> Recent Messages
+                            </h2>
+                            <Link href="/messages" className="text-xs font-black text-primary hover:underline uppercase tracking-widest px-4 py-2 bg-zinc-100 rounded-lg">View Inbox</Link>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4">
+                            {recentConversations.length === 0 ? (
+                                <div className="p-12 bg-white rounded-[2rem] border border-dashed border-zinc-200 text-center">
+                                    <p className="text-zinc-400 font-bold uppercase tracking-widest text-xs mb-4">No active conversations yet</p>
+                                    <Link href="/marketplace" className="px-6 py-3 bg-primary/10 text-primary font-black rounded-xl text-sm">Browse Marketplace</Link>
+                                </div>
+                            ) : (
+                                recentConversations.map((conv) => (
+                                    <Link
+                                        key={conv.id}
+                                        href={`/messages/${conv.id}`}
+                                        className="p-6 bg-white rounded-[2rem] border border-border-soft flex items-center justify-between hover:border-primary/20 transition-all hover:shadow-md group"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 bg-zinc-50 rounded-xl flex items-center justify-center text-primary font-black border border-zinc-100">
+                                                {conv.other_participant_name ? conv.other_participant_name.charAt(0) : <MessageSquare size={20} />}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-black text-primary">{conv.other_participant_name || 'Conversation'}</h4>
+                                                <p className="text-xs text-zinc-500 font-medium">Updated {new Date(conv.updated_at).toLocaleDateString()}</p>
+                                            </div>
+                                        </div>
+                                        <ChevronRight size={20} className="text-zinc-300 group-hover:text-primary transition-colors" />
+                                    </Link>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Community Stats/Recent Posts */}
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-2xl font-black text-primary flex items-center gap-2">
+                                <Users className="text-accent" /> Community
+                            </h2>
+                            <Link href="/community" className="text-xs font-black text-primary hover:underline uppercase tracking-widest">Forum</Link>
+                        </div>
+                        <div className="space-y-4">
+                            {recentPosts.length === 0 ? (
+                                <div className="p-8 bg-zinc-50 rounded-[2rem] border border-zinc-100">
+                                    <p className="text-sm text-zinc-500 font-medium mb-4">You haven't posted anything in the community yet.</p>
+                                    <Link href="/community/create" className="text-xs font-black text-primary uppercase tracking-widest flex items-center gap-1">Start a discussion <ChevronRight size={14} /></Link>
+                                </div>
+                            ) : (
+                                recentPosts.map((post) => (
+                                    <Link
+                                        key={post.id}
+                                        href={`/community/post/${post.id}`}
+                                        className="block p-6 bg-white rounded-[2rem] border border-border-soft hover:shadow-md transition-all"
+                                    >
+                                        <span className="text-[10px] font-black text-primary/40 uppercase tracking-widest block mb-2">{post.category}</span>
+                                        <h4 className="font-black text-primary text-sm line-clamp-1 mb-2">{post.title}</h4>
+                                        <div className="flex items-center justify-between text-[10px] font-bold text-zinc-400">
+                                            <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                                            <span className="flex items-center gap-1"><MessageSquare size={10} /> View</span>
+                                        </div>
+                                    </Link>
+                                ))
+                            )}
+                        </div>
+                    </div>
                 </div>
             </main>
             <Footer />
