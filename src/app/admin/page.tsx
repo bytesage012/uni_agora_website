@@ -7,6 +7,7 @@ import {
     Users,
     ShoppingBag,
     MessageSquare,
+    Mail,
     AlertCircle,
     ArrowRight,
     TrendingUp,
@@ -29,7 +30,8 @@ export default function AdminHub() {
         totalUsers: 0,
         pendingVerifications: 0,
         totalServices: 0,
-        totalForumPosts: 0
+        totalForumPosts: 0,
+        totalContactSubmissions: 0
     });
 
     useEffect(() => {
@@ -52,14 +54,16 @@ export default function AdminHub() {
                     supabase.from("profiles").select("*", { count: "exact", head: true }),
                     supabase.from("profiles").select("*", { count: "exact", head: true }).eq("verification_status", "pending"),
                     supabase.from("services").select("*", { count: "exact", head: true }),
-                    supabase.from("community_posts").select("*", { count: "exact", head: true })
+                    supabase.from("community_posts").select("*", { count: "exact", head: true }),
+                    supabase.from("contact_submissions").select("*", { count: "exact", head: true })
                 ]);
 
                 setStats({
                     totalUsers: userCount || 0,
                     pendingVerifications: pendingCount || 0,
                     totalServices: serviceCount || 0,
-                    totalForumPosts: forumCount || 0
+                    totalForumPosts: forumCount || 0,
+                    totalContactSubmissions: contactCount || 0
                 });
             } catch (err) {
                 console.error("Error fetching admin stats:", err);
@@ -124,6 +128,14 @@ export default function AdminHub() {
             link: "/admin/forum",
             color: "purple",
             stats: `${stats.totalForumPosts} topics`
+        },
+        {
+            title: "Contact Inquiries",
+            desc: "Review user feedback and support requests",
+            icon: <Mail size={24} />,
+            link: "/admin/contact",
+            color: "amber",
+            stats: `${stats.totalContactSubmissions} messages`
         }
     ];
 

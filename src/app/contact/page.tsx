@@ -1,12 +1,54 @@
+"use client";
+
+import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import {
     MessageCircle,
     Mail,
-    ArrowRight
+    ArrowRight,
+    Loader2,
+    CheckCircle2,
+    AlertCircle
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function ContactPage() {
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        subject: "general",
+        message: ""
+    });
+    const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+    const [errorMessage, setErrorMessage] = useState("");
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setStatus("loading");
+        setErrorMessage("");
+
+        try {
+            const { error } = await supabase
+                .from("contact_submissions")
+                .insert([formData]);
+
+            if (error) throw error;
+
+            setStatus("success");
+            setFormData({ name: "", email: "", subject: "general", message: "" });
+        } catch (err: any) {
+            console.error("Submission error:", err);
+            setStatus("error");
+            setErrorMessage(err.message || "Failed to send message. Please try again.");
+        }
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
     return (
         <div className="min-h-screen flex flex-col bg-background font-sans text-foreground scroll-smooth">
             <Navbar />
@@ -46,49 +88,98 @@ export default function ContactPage() {
                     <div className="max-w-2xl mx-auto px-4">
                         <div className="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-xl border border-border-soft">
                             <h2 className="text-3xl font-black text-primary mb-8">Send a Message</h2>
-                            <form className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold text-primary ml-1">Name</label>
-                                        <input
-                                            type="text"
-                                            placeholder="Your Name"
-                                            className="w-full p-4 bg-bg-soft/50 border border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all"
-                                        />
+
+                            {status === "success" ? (
+                                <div className="py-12 text-center animate-in fade-in zoom-in duration-300">
+                                    <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <CheckCircle2 size={40} />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold text-primary ml-1">Email</label>
-                                        <input
-                                            type="email"
-                                            placeholder="Your Student Email"
-                                            className="w-full p-4 bg-bg-soft/50 border border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all"
-                                        />
+                                    <h3 className="text-2xl font-black text-primary mb-4">Message Received!</h3>
+                                    <p className="text-zinc-600 mb-8">Thank you for your feedback. We'll get back to you shortly if needed.</p>
+                                    <button
+                                        onClick={() => setStatus("idle")}
+                                        className="px-8 py-4 bg-primary text-white font-black rounded-2xl"
+                                    >
+                                        Send Another Message
+                                    </button>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleSubmit} className="space-y-6">
+                                    {status === "error" && (
+                                        <div className="p-4 bg-red-50 text-red-600 rounded-2xl flex items-center gap-3 font-bold text-sm">
+                                            <AlertCircle size={18} />
+                                            {errorMessage}
+                                        </div>
+                                    )}
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-bold text-primary ml-1">Name</label>
+                                            <input
+                                                type="text"
+                                                name="name"
+                                                required
+                                                value={formData.name}
+                                                onChange={handleChange}
+                                                placeholder="Your Name"
+                                                className="w-full p-4 bg-bg-soft/50 border border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-bold text-primary ml-1">Email</label>
+                                            <input
+                                                type="email"
+                                                name="email"
+                                                required
+                                                value={formData.email}
+                                                onChange={handleChange}
+                                                placeholder="Your Student Email"
+                                                className="w-full p-4 bg-bg-soft/50 border border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all"
+                                            />
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-sm font-bold text-primary ml-1">Subject</label>
-                                    <select className="w-full p-4 bg-bg-soft/50 border border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all appearance-none cursor-pointer">
-                                        <option value="general">General Inquiry</option>
-                                        <option value="report">Report a User</option>
-                                        <option value="bug">Bug Fix</option>
-                                        <option value="suggestion">Feature Suggestion</option>
-                                    </select>
-                                </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-primary ml-1">Subject</label>
+                                        <select
+                                            name="subject"
+                                            value={formData.subject}
+                                            onChange={handleChange}
+                                            className="w-full p-4 bg-bg-soft/50 border border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all appearance-none cursor-pointer"
+                                        >
+                                            <option value="general">General Inquiry</option>
+                                            <option value="report">Report a User</option>
+                                            <option value="bug">Bug Fix</option>
+                                            <option value="suggestion">Feature Suggestion</option>
+                                        </select>
+                                    </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-sm font-bold text-primary ml-1">Message</label>
-                                    <textarea
-                                        rows={4}
-                                        placeholder="How can we help you?"
-                                        className="w-full p-4 bg-bg-soft/50 border border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all resize-none"
-                                    ></textarea>
-                                </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-primary ml-1">Message</label>
+                                        <textarea
+                                            name="message"
+                                            required
+                                            value={formData.message}
+                                            onChange={handleChange}
+                                            rows={4}
+                                            placeholder="How can we help you?"
+                                            className="w-full p-4 bg-bg-soft/50 border border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all resize-none"
+                                        ></textarea>
+                                    </div>
 
-                                <button className="w-full py-5 bg-primary text-accent font-black text-lg rounded-2xl shadow-xl hover:scale-[1.02] transition-transform active:scale-95 flex items-center justify-center gap-2">
-                                    Send Message <ArrowRight size={20} />
-                                </button>
-                            </form>
+                                    <button
+                                        type="submit"
+                                        disabled={status === "loading"}
+                                        className="w-full py-5 bg-primary text-white font-black text-lg rounded-2xl shadow-xl hover:scale-[1.02] transition-all transform active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:scale-100"
+                                    >
+                                        {status === "loading" ? (
+                                            <Loader2 size={24} className="animate-spin text-accent" />
+                                        ) : (
+                                            <>Send Message <ArrowRight size={20} /></>
+                                        )}
+                                    </button>
+                                </form>
+                            )}
                         </div>
                     </div>
                 </section>
