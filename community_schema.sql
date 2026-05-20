@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS public.community_posts (
     title TEXT NOT NULL,
     content TEXT NOT NULL,
     category TEXT NOT NULL DEFAULT 'General',
+    upvotes INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

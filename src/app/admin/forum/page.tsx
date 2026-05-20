@@ -59,6 +59,7 @@ interface Post {
     id: string;
     title: string;
     category: string;
+    upvotes?: number;
     created_at: string;
     user_id: string;
     profiles: {
