@@ -59,7 +59,7 @@ const ADMIN_EMAIL = "bytesage013@gmail.com";
 interface Service {
     id: string;
     title: string;
-    price: number;
+    price_range: string;
     category: string;
     user_id: string;
     created_at: string;
@@ -252,7 +252,7 @@ export default function ServiceModeration() {
                                             {service.category}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="px-10 py-8 font-black text-primary text-xl">₦{service.price.toLocaleString()}</TableCell>
+                                    <TableCell className="px-10 py-8 font-black text-primary text-xl">{service.price_range || "Flexible"}</TableCell>
                                     <TableCell className="px-10 py-8 text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
