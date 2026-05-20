@@ -6,18 +6,52 @@ import {
     ShieldCheck,
     Users,
     CheckCircle2,
-    XCircle,
     ExternalLink,
     Search,
     Loader2,
     AlertCircle,
     ArrowLeft,
-    Filter
+    Filter,
+    MoreHorizontal,
+    Ban,
+    UserCheck,
+    FileText
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import Link from "next/link";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface UserProfile {
     id: string;
@@ -27,12 +61,12 @@ interface UserProfile {
     is_freelancer: boolean;
     verification_document_url?: string;
     created_at: string;
+    image_url?: string;
 }
 
-// NOTE: Replace this with your actual admin email
 const ADMIN_EMAIL = "bytesage013@gmail.com";
 
-export default function AdminDashboard() {
+export default function AdminUsersPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [users, setUsers] = useState<UserProfile[]>([]);
@@ -112,10 +146,9 @@ export default function AdminDashboard() {
 
             if (updateError) throw updateError;
 
-            // Update local state
             setUsers(users.map(u => u.id === userId ? { ...u, verification_status: newStatus } : u));
+            toast.success(`User status updated to ${newStatus}`);
 
-            // Celebration!
             if (newStatus === "verified") {
                 const confetti = (await import("canvas-confetti")).default;
                 confetti({
@@ -127,7 +160,7 @@ export default function AdminDashboard() {
             }
         } catch (err) {
             console.error("Error toggling verification:", err);
-            alert("Failed to update status.");
+            toast.error("Failed to update status.");
         } finally {
             setActionLoading(null);
         }
@@ -135,7 +168,7 @@ export default function AdminDashboard() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-background flex flex-col">
+            <div className="min-h-screen bg-zinc-50 flex flex-col">
                 <Navbar />
                 <div className="flex-grow flex items-center justify-center">
                     <Loader2 className="animate-spin text-primary" size={48} />
@@ -147,15 +180,19 @@ export default function AdminDashboard() {
 
     if (error && !users.length) {
         return (
-            <div className="min-h-screen bg-background flex flex-col">
+            <div className="min-h-screen bg-zinc-50 flex flex-col font-sans">
                 <Navbar />
-                <div className="flex-grow flex flex-col items-center justify-center p-8 text-center">
-                    <AlertCircle className="text-red-500 mb-4" size={64} />
-                    <h1 className="text-2xl font-black text-primary mb-2">Access Denied</h1>
-                    <p className="text-zinc-500 mb-8 max-w-md">{error}</p>
-                    <Link href="/dashboard" className="px-8 py-4 bg-primary text-white font-black rounded-xl">
-                        Return to Dashboard
-                    </Link>
+                <div className="flex-grow flex flex-col items-center justify-center p-8 text-center max-w-xl mx-auto">
+                    <Card className="p-12 rounded-[3rem] border-none shadow-2xl bg-white">
+                        <AlertCircle className="text-red-500 mx-auto mb-8" size={72} />
+                        <CardTitle className="text-3xl font-black text-primary mb-4">Access Denied</CardTitle>
+                        <CardDescription className="text-zinc-500 text-lg font-medium mb-10 leading-relaxed">
+                            {error}
+                        </CardDescription>
+                        <Button asChild className="h-14 px-10 rounded-2xl bg-primary text-white font-black text-lg shadow-xl shadow-primary/20">
+                            <Link href="/dashboard">Return to Dashboard</Link>
+                        </Button>
+                    </Card>
                 </div>
                 <Footer />
             </div>
@@ -163,129 +200,148 @@ export default function AdminDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-background flex flex-col font-sans">
+        <div className="min-h-screen bg-zinc-50 flex flex-col font-sans">
             <Navbar />
 
-            <main className="flex-grow container mx-auto px-4 py-12 max-w-6xl">
-                <header className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
-                                <ShieldCheck size={24} />
+            <main className="flex-grow container mx-auto px-4 py-12 max-w-7xl">
+                <header className="mb-12 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+                    <div className="space-y-4">
+                        <Button variant="ghost" asChild className="mb-4 font-bold text-zinc-400 hover:text-primary gap-2 p-0 h-auto hover:bg-transparent">
+                            <Link href="/admin">
+                                <ArrowLeft size={16} /> Back to Admin Hub
+                            </Link>
+                        </Button>
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 bg-primary text-white rounded-[1.25rem] flex items-center justify-center shadow-xl shadow-primary/20">
+                                <Users size={32} />
                             </div>
-                            <h1 className="text-4xl font-black text-primary tracking-tight">Admin Console</h1>
+                            <h1 className="text-5xl font-black text-primary tracking-tight">Manage Users</h1>
                         </div>
-                        <p className="text-zinc-500 font-medium">Verified Merchant Management System</p>
+                        <p className="text-zinc-500 font-medium text-lg leading-relaxed">Review student identities and manage marketplace access.</p>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
-                            <input
-                                type="text"
-                                placeholder="Search users..."
-                                className="pl-12 pr-6 py-3 bg-white border border-border-soft rounded-xl outline-none focus:border-primary transition-all font-bold text-sm w-full sm:w-64 shadow-sm"
+                    <div className="flex flex-col sm:flex-row gap-4 items-center">
+                        <div className="relative w-full sm:w-80 group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-primary transition-colors" size={20} />
+                            <Input
+                                placeholder="Search by name or campus..."
+                                className="h-14 pl-12 bg-white border-zinc-100 rounded-2xl outline-none focus-visible:ring-primary/20 shadow-sm font-medium transition-all"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        <select
-                            className="px-4 py-3 bg-white border border-border-soft rounded-xl outline-none focus:border-primary font-bold text-sm shadow-sm"
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                        >
-                            <option value="all">All Status</option>
-                            <option value="verified">Verified</option>
-                            <option value="pending">Pending</option>
-                            <option value="unverified">Unverified</option>
-                        </select>
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                            <SelectTrigger className="h-14 w-full sm:w-48 px-6 bg-white border-zinc-100 rounded-2xl font-black text-xs uppercase tracking-widest focus:ring-primary/20 shadow-sm">
+                                <SelectValue placeholder="Status Filter" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-2xl">
+                                <SelectItem value="all" className="rounded-xl my-1">All Status</SelectItem>
+                                <SelectItem value="verified" className="rounded-xl my-1">Verified</SelectItem>
+                                <SelectItem value="pending" className="rounded-xl my-1">Pending</SelectItem>
+                                <SelectItem value="unverified" className="rounded-xl my-1">Unverified</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </header>
 
-                <div className="bg-white rounded-[2.5rem] border border-border-soft shadow-sm overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-zinc-50 border-b border-border-soft">
-                                    <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">User Details</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Campus Status</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Documents</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest text-center">Verification Status</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-zinc-50">
-                                {filteredUsers.map((user) => (
-                                    <tr key={user.id} className="hover:bg-zinc-50 transition-colors even:bg-zinc-50/50 border-b border-border-soft last:border-0">
-                                        <td className="px-8 py-6">
+                <Card className="rounded-[3rem] border-none shadow-sm overflow-hidden bg-white">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="hover:bg-transparent bg-zinc-50 border-b border-zinc-100">
+                                <TableHead className="px-10 py-6 text-[10px] font-black text-zinc-400 uppercase tracking-widest">User Profile</TableHead>
+                                <TableHead className="px-10 py-6 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Campus & Role</TableHead>
+                                <TableHead className="px-10 py-6 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Verification Docs</TableHead>
+                                <TableHead className="px-10 py-6 text-[10px] font-black text-zinc-400 uppercase tracking-widest text-center">Status</TableHead>
+                                <TableHead className="px-10 py-6 text-[10px] font-black text-zinc-400 uppercase tracking-widest text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {filteredUsers.map((user) => (
+                                <TableRow key={user.id} className="group hover:bg-zinc-50 transition-colors border-b border-zinc-100 last:border-0">
+                                    <TableCell className="px-10 py-8">
+                                        <div className="flex items-center gap-4">
+                                            <Avatar className="h-12 w-12 rounded-2xl border bg-zinc-50 shadow-sm">
+                                                <AvatarImage src={user.image_url} className="object-cover" />
+                                                <AvatarFallback className="text-primary font-black">
+                                                    {user.full_name?.charAt(0)}
+                                                </AvatarFallback>
+                                            </Avatar>
                                             <div className="flex flex-col">
-                                                <span className="font-black text-primary">{user.full_name}</span>
-                                                <span className="text-xs text-zinc-400 font-bold">Joined {new Date(user.created_at).toLocaleDateString()}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-bold text-zinc-700">{user.university}</span>
-                                                <span className="text-[10px] font-black text-primary/50 uppercase tracking-tighter">
-                                                    {user.is_freelancer ? "Freelancer" : "Buyer Only"}
+                                                <span className="text-lg font-black text-primary leading-none mb-1.5">{user.full_name}</span>
+                                                <span className="text-[10px] text-zinc-400 font-black uppercase tracking-widest flex items-center gap-2">
+                                                    <Clock size={10} className="text-primary" />
+                                                    Joined {new Date(user.created_at).toLocaleDateString()}
                                                 </span>
                                             </div>
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            {user.verification_document_url ? (
-                                                <a
-                                                    href={user.verification_document_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-100 text-zinc-600 rounded-lg text-[10px] font-black uppercase hover:bg-primary hover:text-white transition-all shadow-sm"
-                                                >
-                                                    View Document <ExternalLink size={12} />
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="px-10 py-8">
+                                        <div className="flex flex-col gap-1.5">
+                                            <span className="text-sm font-black text-zinc-600">{user.university}</span>
+                                            <Badge variant="outline" className={`w-fit text-[9px] font-black uppercase tracking-widest border-none px-2 py-0.5 ${user.is_freelancer ? 'bg-primary/5 text-primary' : 'bg-zinc-50 text-zinc-400'}`}>
+                                                {user.is_freelancer ? "Freelancer" : "Student"}
+                                            </Badge>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="px-10 py-8">
+                                        {user.verification_document_url ? (
+                                            <Button variant="secondary" size="sm" asChild className="h-10 px-4 rounded-xl bg-zinc-100 hover:bg-primary hover:text-white transition-all text-[10px] font-black uppercase tracking-widest gap-2 group-hover:shadow-md">
+                                                <a href={user.verification_document_url} target="_blank" rel="noopener noreferrer">
+                                                    <FileText size={14} /> Open Document
                                                 </a>
-                                            ) : (
-                                                <span className="text-[10px] font-black text-zinc-300 uppercase italic tracking-widest">No Doc</span>
-                                            )}
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex justify-center">
-                                                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border
-                                                    ${user.verification_status === 'verified'
-                                                        ? 'bg-green-50 text-green-600 border-green-100'
-                                                        : user.verification_status === 'pending'
-                                                            ? 'bg-amber-50 text-amber-600 border-amber-100 animate-pulse'
-                                                            : 'bg-zinc-50 text-zinc-400 border-zinc-100'}`}>
-                                                    {user.verification_status || 'unverified'}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6 text-right">
-                                            <button
-                                                onClick={() => toggleVerification(user.id, user.verification_status)}
-                                                disabled={actionLoading === user.id}
-                                                className={`px-5 py-2 rounded-xl text-xs font-black transition-all shadow-sm active:scale-95 disabled:opacity-50
-                                                    ${user.verification_status === 'verified'
-                                                        ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-100'
-                                                        : 'bg-primary text-white hover:bg-green-900 active:scale-95 shadow-primary/20'}`}
-                                            >
-                                                {actionLoading === user.id ? (
-                                                    <Loader2 size={14} className="animate-spin" />
-                                                ) : user.verification_status === 'verified' ? (
-                                                    'Revoke'
-                                                ) : (
-                                                    'Verify Now'
-                                                )}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                        {filteredUsers.length === 0 && (
-                            <div className="py-20 text-center text-zinc-400 font-bold uppercase tracking-widest">
-                                No users found matching your search
-                            </div>
-                        )}
-                    </div>
-                </div>
+                                            </Button>
+                                        ) : (
+                                            <span className="text-[10px] font-black text-zinc-300 uppercase italic tracking-[0.2em] ml-2">No Doc Uploaded</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="px-10 py-8 text-center">
+                                        <Badge variant="outline" className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2
+                                            ${user.verification_status === 'verified'
+                                                ? 'bg-green-50 text-green-600 border-green-100 shadow-sm'
+                                                : user.verification_status === 'pending'
+                                                    ? 'bg-amber-50 text-amber-600 border-amber-100 animate-pulse'
+                                                    : 'bg-zinc-50 text-zinc-400 border-zinc-100'}`}>
+                                            {user.verification_status || 'unverified'}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="px-10 py-8 text-right">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-zinc-200">
+                                                    <MoreHorizontal size={20} className="text-zinc-400" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2">
+                                                <DropdownMenuLabel className="text-[10px] font-black text-zinc-400 uppercase tracking-widest p-3">Verify Identity</DropdownMenuLabel>
+                                                <DropdownMenuSeparator className="mx-2" />
+                                                <DropdownMenuItem 
+                                                    onClick={() => toggleVerification(user.id, user.verification_status)}
+                                                    className={`rounded-xl p-3 font-bold gap-3 focus:bg-primary/5 cursor-pointer ${user.verification_status === 'verified' ? 'text-red-600 focus:text-red-700' : 'text-primary'}`}
+                                                >
+                                                    {user.verification_status === 'verified' ? (
+                                                        <><Ban size={18} /> Revoke Verification</>
+                                                    ) : (
+                                                        <><UserCheck size={18} /> Approve Verification</>
+                                                    )}
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem className="rounded-xl p-3 font-bold gap-3 focus:bg-zinc-100 cursor-pointer text-zinc-600">
+                                                    <Users size={18} /> View Public Profile
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                    {filteredUsers.length === 0 && (
+                        <div className="py-24 text-center space-y-4 bg-zinc-50/50">
+                            <Users className="mx-auto text-zinc-200" size={64} />
+                            <h3 className="text-2xl font-black text-primary">No users found</h3>
+                            <p className="text-zinc-400 font-medium max-w-xs mx-auto">Try adjusting your filters or search query to find who you're looking for.</p>
+                        </div>
+                    )}
+                </Card>
             </main>
 
             <Footer />

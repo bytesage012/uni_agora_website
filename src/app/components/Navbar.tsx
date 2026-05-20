@@ -3,25 +3,62 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { ShieldCheck, LogOut, LayoutDashboard, ShoppingBag, Menu, X, User as UserIcon, MessageSquare, Search, Users, Bell } from "lucide-react";
+import {
+    ShieldCheck,
+    LogOut,
+    LayoutDashboard,
+    ShoppingBag,
+    Menu,
+    User as UserIcon,
+    MessageSquare,
+    Search,
+    Users,
+    Bell,
+    ExternalLink
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
+
+import {
+    NavigationMenu,
+    NavigationMenuItem,
+    NavigationMenuLink,
+    NavigationMenuList,
+    navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 export default function Navbar() {
     const router = useRouter();
     const pathname = usePathname();
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [notifications, setNotifications] = useState<any[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [showNotifications, setShowNotifications] = useState(false);
 
     // Active Link Helper
     const isActive = (path: string) => pathname === path;
 
     useEffect(() => {
-        // Check initial session
         const checkUser = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             setUser(session?.user ?? null);
@@ -30,16 +67,13 @@ export default function Navbar() {
 
         checkUser();
 
-        // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null);
         });
 
-        // Initialize notifications if user exists
         const initNotifications = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {
-                // Fetch unread notifications
                 const { data: notifs, error: notifError } = await supabase
                     .from("notifications")
                     .select("*")
@@ -52,7 +86,6 @@ export default function Navbar() {
                     setUnreadCount(notifs.filter(n => !n.is_read).length);
                 }
 
-                // Real-time subscription for notifications
                 const channel = supabase
                     .channel(`user-notifs-${session.user.id}`)
                     .on(
@@ -89,7 +122,6 @@ export default function Navbar() {
     const handleLogout = async () => {
         await supabase.auth.signOut();
         router.push("/");
-        setMobileMenuOpen(false);
     };
 
     const markAsRead = async (id: string) => {
@@ -127,7 +159,6 @@ export default function Navbar() {
     };
 
     const handleNotificationClick = async (notif: any) => {
-        setShowNotifications(false);
         if (!notif.is_read) {
             await markAsRead(notif.id);
         }
@@ -137,252 +168,252 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="sticky top-0 w-full bg-white/70 backdrop-blur-md z-[50] border-b border-white/20 shadow-sm transition-all duration-300">
+        <nav className="sticky top-0 w-full bg-background/80 backdrop-blur-md z-50 border-b shadow-sm transition-all duration-300">
             <div className="max-w-[1440px] mx-auto px-6 md:px-10 py-4 flex justify-between items-center">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-3 group">
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center overflow-hidden shadow-sm border border-zinc-100 group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center overflow-hidden shadow-sm border group-hover:scale-110 transition-transform">
                         <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
                     </div>
                     <span className="text-2xl font-black text-primary tracking-tighter italic">UniAGORA</span>
                 </Link>
 
                 {/* Desktop Navigation */}
-                <div className="hidden md:flex items-center gap-8 text-sm font-bold">
-                    <Link
-                        href="/marketplace"
-                        className={`transition-colors flex items-center gap-1.5 ${isActive('/marketplace') ? 'text-primary' : 'text-zinc-500 hover:text-primary'}`}
-                    >
-                        <ShoppingBag size={16} /> Marketplace
-                    </Link>
-                    <Link
-                        href="/community"
-                        className={`transition-colors flex items-center gap-1.5 ${isActive('/community') ? 'text-primary' : 'text-zinc-500 hover:text-primary'}`}
-                    >
-                        <Users size={16} /> Community
-                    </Link>
+                <div className="hidden md:flex items-center gap-4">
+                    <NavigationMenu>
+                        <NavigationMenuList>
+                            <NavigationMenuItem>
+                                <Link href="/marketplace" legacyBehavior passHref>
+                                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                                        <ShoppingBag className="mr-2 h-4 w-4" /> Marketplace
+                                    </NavigationMenuLink>
+                                </Link>
+                            </NavigationMenuItem>
+                            <NavigationMenuItem>
+                                <Link href="/community" legacyBehavior passHref>
+                                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                                        <Users className="mr-2 h-4 w-4" /> Community
+                                    </NavigationMenuLink>
+                                </Link>
+                            </NavigationMenuItem>
+                        </NavigationMenuList>
+                    </NavigationMenu>
+
+                    <Separator orientation="vertical" className="h-6 mx-2" />
 
                     {user && (
-                        <div className="relative ml-2">
-                            <button
-                                onClick={() => setShowNotifications(!showNotifications)}
-                                className="relative p-2 text-zinc-500 hover:text-primary transition-colors hover:bg-zinc-100 rounded-xl"
-                            >
-                                <Bell size={20} />
-                                {unreadCount > 0 && (
-                                    <span className="absolute top-1 right-1 w-4 h-4 bg-accent text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white">
-                                        {unreadCount}
-                                    </span>
-                                )}
-                            </button>
-
-                            {showNotifications && (
-                                <div className="absolute right-0 mt-3 w-80 bg-white rounded-3xl border border-border-soft shadow-2xl py-4 z-50 overflow-hidden">
-                                    <div className="px-6 pb-4 border-b border-zinc-50 flex items-center justify-between">
-                                        <h4 className="text-sm font-black text-primary uppercase tracking-widest">Notifications</h4>
-                                        <button
-                                            onClick={markAllAsRead}
-                                            className="text-[10px] font-bold text-zinc-400 hover:text-primary uppercase"
-                                        >
-                                            Mark all read
-                                        </button>
-                                    </div>
-                                    <div className="max-h-96 overflow-y-auto">
-                                        {notifications.length === 0 ? (
-                                            <div className="px-8 py-10 text-center">
-                                                <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">No notifications yet</p>
-                                            </div>
-                                        ) : (
-                                            notifications.map((notif) => (
-                                                <button
-                                                    key={notif.id}
-                                                    onClick={() => handleNotificationClick(notif)}
-                                                    className={`w-full text-left block px-6 py-4 hover:bg-zinc-50 transition-colors border-b border-zinc-50 last:border-0 ${!notif.is_read ? 'bg-primary/[0.02]' : ''}`}
-                                                >
-                                                    <div className="flex gap-4">
-                                                        <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!notif.is_read ? 'bg-accent' : 'bg-transparent'}`}></div>
-                                                        <div>
-                                                            <p className="text-xs font-black text-primary mb-0.5">{notif.title}</p>
-                                                            <p className="text-[11px] text-zinc-500 font-medium leading-relaxed line-clamp-2">{notif.content}</p>
-                                                            <p className="text-[9px] text-zinc-300 font-bold mt-1 uppercase tracking-tighter">
-                                                                {new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                            </p>
-                                                        </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="relative">
+                                    <Bell className="h-5 w-5" />
+                                    {unreadCount > 0 && (
+                                        <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center bg-accent text-accent-foreground text-[10px] font-bold">
+                                            {unreadCount}
+                                        </Badge>
+                                    )}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-80 p-0 rounded-2xl">
+                                <DropdownMenuLabel className="p-4 flex items-center justify-between">
+                                    <span className="text-xs font-black uppercase tracking-widest text-primary">Notifications</span>
+                                    <Button variant="ghost" size="sm" className="text-[10px] h-auto p-0 hover:bg-transparent text-muted-foreground hover:text-primary" onClick={markAllAsRead}>
+                                        Mark all read
+                                    </Button>
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <ScrollArea className="h-80">
+                                    {notifications.length === 0 ? (
+                                        <div className="p-8 text-center">
+                                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">No notifications yet</p>
+                                        </div>
+                                    ) : (
+                                        notifications.map((notif) => (
+                                            <DropdownMenuItem
+                                                key={notif.id}
+                                                className={`p-4 cursor-pointer focus:bg-muted ${!notif.is_read ? 'bg-primary/5' : ''}`}
+                                                onClick={() => handleNotificationClick(notif)}
+                                            >
+                                                <div className="flex gap-3">
+                                                    {!notif.is_read && <div className="mt-1.5 h-2 w-2 rounded-full bg-accent shrink-0" />}
+                                                    <div className="space-y-1">
+                                                        <p className="text-xs font-black text-primary leading-none">{notif.title}</p>
+                                                        <p className="text-[11px] text-muted-foreground line-clamp-2">{notif.content}</p>
+                                                        <p className="text-[9px] text-muted-foreground/60 font-bold uppercase tracking-tighter">
+                                                            {new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </p>
                                                     </div>
-                                                </button>
-                                            ))
-                                        )}
-                                    </div>
-                                    <div className="px-6 pt-4 border-t border-zinc-50 text-center">
-                                        <Link
-                                            href="/notifications"
-                                            className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline inline-block pb-2"
-                                            onClick={() => setShowNotifications(false)}
-                                        >
-                                            View All Notifications
-                                        </Link>
-                                    </div>
+                                                </div>
+                                            </DropdownMenuItem>
+                                        ))
+                                    )}
+                                </ScrollArea>
+                                <DropdownMenuSeparator />
+                                <div className="p-2">
+                                    <Button variant="ghost" className="w-full text-[10px] font-black uppercase tracking-widest h-8" asChild>
+                                        <Link href="/notifications">View All</Link>
+                                    </Button>
                                 </div>
-                            )}
-                        </div>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     )}
-                    <Link
-                        href="/about"
-                        className={`transition-colors ${isActive('/about') ? 'text-primary' : 'text-zinc-500 hover:text-primary'}`}
-                    >
-                        About Us
+
+                    <Link href="/about" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors px-3 py-2">
+                        About
                     </Link>
-                    <Link
-                        href="/contact"
-                        className={`transition-colors ${isActive('/contact') ? 'text-primary' : 'text-zinc-500 hover:text-primary'}`}
-                    >
+                    <Link href="/contact" className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors px-3 py-2">
                         Support
                     </Link>
 
-                    <div className="h-6 w-[1px] bg-zinc-200"></div>
-
                     {loading ? (
-                        <div className="flex items-center gap-4">
-                            <div className="w-24 h-9 bg-zinc-100 animate-pulse rounded-xl"></div>
-                            <div className="w-24 h-9 bg-zinc-100 animate-pulse rounded-xl"></div>
+                        <div className="flex items-center gap-2">
+                            <Skeleton className="h-9 w-24 rounded-xl" />
+                            <Skeleton className="h-9 w-24 rounded-xl" />
                         </div>
                     ) : user ? (
-                        <div className="flex items-center gap-6">
-                            {user.email === 'bytesage013@gmail.com' && (
-                                <Link
-                                    href="/admin"
-                                    className={`flex items-center gap-2 transition-colors ${isActive('/admin') ? 'text-red-500' : 'text-zinc-500 hover:text-red-500'}`}
-                                >
-                                    <ShieldCheck size={18} /> Admin
-                                </Link>
-                            )}
-                            <Link
-                                href="/messages"
-                                className={`flex items-center gap-2 transition-colors ${isActive('/messages') ? 'text-accent' : 'text-primary hover:text-accent'}`}
-                            >
-                                <MessageSquare size={18} /> Messages
-                            </Link>
-                            <Link
-                                href="/dashboard"
-                                className={`flex items-center gap-2 transition-colors ${isActive('/dashboard') ? 'text-accent' : 'text-primary hover:text-accent'}`}
-                            >
-                                <LayoutDashboard size={18} /> Dashboard
-                            </Link>
-                            <Link
-                                href="/profile"
-                                className={`flex items-center gap-2 transition-colors ${isActive('/profile') ? 'text-accent' : 'text-primary hover:text-accent'}`}
-                            >
-                                <UserIcon size={18} /> Profile
-                            </Link>
-                            <button
-                                onClick={handleLogout}
-                                className="text-zinc-400 hover:text-red-500 transition-all flex items-center gap-2 font-bold group"
-                                title="Logout"
-                            >
-                                <LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform" />
-                                <span className="hidden lg:inline text-xs uppercase tracking-widest">Logout</span>
-                            </button>
-                        </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="relative h-10 w-10 rounded-xl p-0 overflow-hidden border bg-muted/50">
+                                    <Avatar className="h-full w-full rounded-none">
+                                        <AvatarImage src="" />
+                                        <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                                            {user.email?.substring(0, 2).toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl">
+                                <DropdownMenuLabel className="px-2 py-1.5 text-xs font-bold text-muted-foreground truncate">
+                                    {user.email}
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {user.email === 'bytesage013@gmail.com' && (
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/admin" className="flex items-center text-red-600 focus:text-red-600 cursor-pointer">
+                                            <ShieldCheck className="mr-2 h-4 w-4" /> Admin Panel
+                                        </Link>
+                                    </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem asChild>
+                                    <Link href="/dashboard" className="cursor-pointer">
+                                        <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link href="/messages" className="cursor-pointer">
+                                        <MessageSquare className="mr-2 h-4 w-4" /> Messages
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link href="/profile" className="cursor-pointer">
+                                        <UserIcon className="mr-2 h-4 w-4" /> Profile
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer">
+                                    <LogOut className="mr-2 h-4 w-4" /> Logout
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     ) : (
-                        <div className="flex items-center gap-4">
-                            <Link href="/login" className="text-zinc-500 hover:text-primary transition-colors">Login</Link>
-                            <Link href="/signup" className="px-6 py-2.5 bg-primary text-white rounded-xl hover:bg-green-900 active:scale-95 transition-all shadow-lg shadow-primary/20">
-                                Join Now
-                            </Link>
+                        <div className="flex items-center gap-3">
+                            <Button variant="ghost" asChild>
+                                <Link href="/login">Login</Link>
+                            </Button>
+                            <Button className="rounded-xl shadow-lg shadow-primary/20" asChild>
+                                <Link href="/signup">Join Now</Link>
+                            </Button>
                         </div>
                     )}
 
-                    {/* Marketplace Search Toggle - Desktop */}
                     {pathname === '/marketplace' && (
-                        <button
+                        <Button
+                            variant="secondary"
+                            size="icon"
+                            className="rounded-xl border shadow-sm"
                             onClick={() => {
                                 const params = new URLSearchParams(window.location.search);
                                 if (params.get('f') === 'off') params.delete('f');
                                 else params.set('f', 'off');
                                 router.push(`/marketplace?${params.toString()}`, { scroll: false });
                             }}
-                            className="p-2.5 bg-zinc-50 text-primary rounded-xl hover:bg-zinc-100 border border-zinc-100 transition-all active:scale-90 flex items-center gap-2"
-                            title="Toggle Search & Filters"
                         >
-                            <Search size={18} className="text-[#004d00]" />
-                            <span className="hidden lg:inline text-xs font-black uppercase tracking-tight">Filters</span>
-                        </button>
+                            <Search className="h-4 w-4" />
+                        </Button>
                     )}
                 </div>
 
-                {/* Mobile Toggle & Actions */}
-                <div className="flex items-center gap-2 md:hidden">
+                {/* Mobile Toggle */}
+                <div className="flex md:hidden items-center gap-2">
                     {pathname === '/marketplace' && (
-                        <button
+                        <Button
+                            variant="secondary"
+                            size="icon"
+                            className="h-9 w-9 rounded-lg"
                             onClick={() => {
                                 const params = new URLSearchParams(window.location.search);
                                 if (params.get('f') === 'off') params.delete('f');
                                 else params.set('f', 'off');
                                 router.push(`/marketplace?${params.toString()}`, { scroll: false });
                             }}
-                            className="p-2 bg-zinc-50 text-primary rounded-lg border border-zinc-100 active:scale-90"
                         >
-                            <Search size={20} className="text-[#004d00]" />
-                        </button>
+                            <Search className="h-5 w-5" />
+                        </Button>
                     )}
-                    <button
-                        className="text-primary p-2 bg-zinc-50 rounded-lg"
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    >
-                        {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                    </button>
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant="secondary" size="icon" className="h-9 w-9 rounded-lg">
+                                <Menu className="h-5 w-5" />
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                            <SheetHeader className="text-left">
+                                <SheetTitle className="text-2xl font-black italic text-primary tracking-tighter">UniAGORA</SheetTitle>
+                            </SheetHeader>
+                            <div className="flex flex-col gap-6 py-8">
+                                <Link href="/marketplace" className="flex items-center gap-3 text-lg font-black text-primary hover:text-accent transition-colors">
+                                    <ShoppingBag size={20} /> Marketplace
+                                </Link>
+                                <Link href="/community" className="flex items-center gap-3 text-lg font-black text-primary hover:text-accent transition-colors">
+                                    <Users size={20} /> Community
+                                </Link>
+                                <Link href="/about" className="text-lg font-black text-primary hover:text-accent transition-colors">About Us</Link>
+                                <Link href="/contact" className="text-lg font-black text-primary hover:text-accent transition-colors">Support</Link>
+
+                                <Separator />
+
+                                {user ? (
+                                    <>
+                                        {user.email === 'bytesage013@gmail.com' && (
+                                            <Link href="/admin" className="flex items-center gap-3 text-lg font-black text-red-600 hover:text-red-700">
+                                                <ShieldCheck size={20} /> Admin Panel
+                                            </Link>
+                                        )}
+                                        <Link href="/dashboard" className="flex items-center gap-3 text-lg font-black text-primary hover:text-accent transition-colors">
+                                            <LayoutDashboard size={20} /> My Dashboard
+                                        </Link>
+                                        <Link href="/messages" className="flex items-center gap-3 text-lg font-black text-primary hover:text-accent transition-colors">
+                                            <MessageSquare size={20} /> My Messages
+                                        </Link>
+                                        <Link href="/profile" className="text-lg font-black text-primary hover:text-accent transition-colors">My Profile</Link>
+                                        <Button variant="secondary" className="mt-4 w-full justify-center gap-2" onClick={handleLogout}>
+                                            <LogOut size={20} /> Logout
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <div className="flex flex-col gap-4">
+                                        <Button variant="secondary" className="w-full h-12 rounded-xl text-lg font-black" asChild>
+                                            <Link href="/login">Login</Link>
+                                        </Button>
+                                        <Button className="w-full h-12 rounded-xl text-lg font-black shadow-lg" asChild>
+                                            <Link href="/signup">Join Now</Link>
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        </SheetContent>
+                    </Sheet>
                 </div>
             </div>
-
-            {/* Mobile Menu Overlay */}
-            {
-                mobileMenuOpen && (
-                    <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-border-soft shadow-2xl py-8 px-6 flex flex-col gap-6 animate-in slide-in-from-top-4 duration-200">
-                        <Link href="/marketplace" className="text-lg font-black text-primary flex items-center gap-3 active:scale-95 transition-transform" onClick={() => setMobileMenuOpen(false)}>
-                            <ShoppingBag size={20} /> Marketplace
-                        </Link>
-                        <Link href="/community" className="text-lg font-black text-primary flex items-center gap-3 active:scale-95 transition-transform" onClick={() => setMobileMenuOpen(false)}>
-                            <Users size={20} /> Community
-                        </Link>
-                        <Link href="/about" className="text-lg font-black text-primary active:scale-95 transition-transform" onClick={() => setMobileMenuOpen(false)}>About Us</Link>
-                        <Link href="/contact" className="text-lg font-black text-primary active:scale-95 transition-transform" onClick={() => setMobileMenuOpen(false)}>Support</Link>
-
-                        <hr className="border-zinc-100" />
-
-                        {user ? (
-                            <>
-                                {user.email === 'bytesage013@gmail.com' && (
-                                    <Link href="/admin" className="text-lg font-black text-red-600 flex items-center gap-3 active:scale-95 transition-transform" onClick={() => setMobileMenuOpen(false)}>
-                                        <ShieldCheck size={20} /> Admin Panel
-                                    </Link>
-                                )}
-                                <Link href="/messages" className="flex items-center gap-3 text-lg font-black text-primary active:scale-95 transition-transform" onClick={() => setMobileMenuOpen(false)}>
-                                    <MessageSquare size={20} /> My Messages
-                                </Link>
-                                <Link href="/dashboard" className="flex items-center gap-3 text-lg font-black text-primary active:scale-95 transition-transform" onClick={() => setMobileMenuOpen(false)}>
-                                    <LayoutDashboard size={20} /> My Dashboard
-                                </Link>
-                                <Link href="/profile" className="text-lg font-black text-primary active:scale-95 transition-transform" onClick={() => setMobileMenuOpen(false)}>My Profile</Link>
-                                <button
-                                    onClick={handleLogout}
-                                    className="w-full py-4 bg-zinc-100 text-zinc-600 font-black rounded-2xl flex items-center justify-center gap-2 mt-4 active:scale-95 transition-transform"
-                                >
-                                    <LogOut size={20} /> Logout
-                                </button>
-                            </>
-                        ) : (
-                            <div className="flex flex-col gap-4 pt-4">
-                                <Link href="/login" className="w-full py-4 bg-zinc-50 text-primary font-black rounded-2xl text-center active:scale-95 transition-transform" onClick={() => setMobileMenuOpen(false)}>
-                                    Login
-                                </Link>
-                                <Link href="/signup" className="w-full py-4 bg-primary text-white font-black rounded-2xl text-center shadow-lg active:scale-95 transition-transform" onClick={() => setMobileMenuOpen(false)}>
-                                    Join Now
-                                </Link>
-                            </div>
-                        )}
-                    </div>
-                )
-            }
         </nav >
     );
 }

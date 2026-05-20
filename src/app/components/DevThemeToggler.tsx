@@ -2,43 +2,43 @@
 
 import { useState, useEffect } from "react";
 import { Palette } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export default function DevThemeToggler() {
     const [mounted, setMounted] = useState(false);
     const [isNavyTheme, setIsNavyTheme] = useState(false);
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
-        // Check local storage or existing class if needed
     }, []);
 
     if (!mounted || process.env.NODE_ENV !== "development") {
         return null;
     }
 
-    const toggleTheme = () => {
-        const isNowNavy = !isNavyTheme;
-        setIsNavyTheme(isNowNavy);
-        console.log("Toggling theme. Is now navy:", isNowNavy);
-
-        if (isNowNavy) {
+    const toggleTheme = (checked: boolean) => {
+        setIsNavyTheme(checked);
+        if (checked) {
             document.documentElement.classList.add("theme-navy");
-            console.log("Added .theme-navy to html element");
         } else {
             document.documentElement.classList.remove("theme-navy");
-            console.log("Removed .theme-navy from html element");
         }
     };
 
     return (
-        <button
-            onClick={toggleTheme}
-            className="fixed bottom-4 right-4 bg-primary text-white p-3 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all z-50 border-2 border-accent"
-            title="Toggle Developer Theme"
-        >
-            <Palette size={24} />
-            <span className="sr-only">Toggle Theme</span>
-        </button>
+        <div className="fixed bottom-4 right-4 bg-white border border-border p-3 rounded-2xl shadow-xl flex items-center gap-3 z-50 animate-in slide-in-from-bottom-4">
+            <Palette size={18} className="text-muted-foreground" />
+            <div className="flex items-center gap-2">
+                <Switch
+                    id="theme-toggle"
+                    checked={isNavyTheme}
+                    onCheckedChange={toggleTheme}
+                />
+                <Label htmlFor="theme-toggle" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    {isNavyTheme ? "Navy" : "Forest"}
+                </Label>
+            </div>
+        </div>
     );
 }

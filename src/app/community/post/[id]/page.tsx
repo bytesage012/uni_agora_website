@@ -7,7 +7,6 @@ import {
     MessageCircle,
     Send,
     Clock,
-    User,
     Loader2,
     AlertCircle,
     CheckCircle2
@@ -16,6 +15,15 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Comment {
     id: string;
@@ -61,7 +69,6 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 const { data: { session } } = await supabase.auth.getSession();
                 setCurrentUser(session?.user ?? null);
 
-                // Fetch Post
                 const { data: postData, error: postError } = await supabase
                     .from("community_posts")
                     .select(`
@@ -82,7 +89,6 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                     profiles: Array.isArray(postData.profiles) ? postData.profiles[0] : postData.profiles
                 });
 
-                // Fetch Comments
                 const { data: commentsData, error: commentsError } = await supabase
                     .from("community_comments")
                     .select(`
@@ -114,7 +120,10 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
     const handleCommentSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!currentUser) return alert("Please login to comment.");
+        if (!currentUser) {
+            toast.error("Please login to comment.");
+            return;
+        }
         if (newComment.trim().length < 2) return;
 
         setCommenting(true);
@@ -146,9 +155,10 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
             setComments([...comments, transformedComment]);
             setNewComment("");
+            toast.success("Comment posted!");
         } catch (err) {
             console.error("Error posting comment:", err);
-            alert("Failed to post comment.");
+            toast.error("Failed to post comment.");
         } finally {
             setCommenting(false);
         }
@@ -168,17 +178,19 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
     if (error || !post) {
         return (
-            <div className="min-h-screen bg-zinc-50 flex flex-col">
+            <div className="min-h-screen bg-zinc-50 flex flex-col font-sans">
                 <Navbar />
                 <div className="flex-grow flex items-center justify-center px-4">
-                    <div className="max-w-md w-full bg-white p-12 rounded-[2.5rem] shadow-sm text-center">
+                    <Card className="max-w-md w-full p-12 rounded-[2.5rem] shadow-sm text-center border-none">
                         <AlertCircle className="mx-auto text-red-500 mb-6" size={64} />
-                        <h1 className="text-2xl font-black text-primary mb-4">Discussion Missing</h1>
-                        <p className="text-zinc-500 font-medium mb-8">{error || "This conversation may have been removed."}</p>
-                        <Link href="/community" className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white font-bold rounded-2xl">
-                            <ChevronLeft size={20} /> Back to Community
-                        </Link>
-                    </div>
+                        <CardTitle className="text-2xl font-black text-primary mb-4">Discussion Missing</CardTitle>
+                        <CardDescription className="text-zinc-500 font-medium mb-8">{error || "This conversation may have been removed."}</CardDescription>
+                        <Button asChild className="h-12 px-8 rounded-2xl shadow-lg">
+                            <Link href="/community">
+                                <ChevronLeft size={20} className="mr-2" /> Back to Community
+                            </Link>
+                        </Button>
+                    </Card>
                 </div>
                 <Footer />
             </div>
@@ -190,123 +202,120 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
             <Navbar />
 
             <main className="flex-grow container mx-auto px-4 py-12 max-w-4xl">
-                <Link
-                    href="/community"
-                    className="inline-flex items-center gap-2 text-zinc-500 hover:text-primary font-bold mb-8 transition-colors group"
-                >
-                    <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-                    Back to Forum
-                </Link>
+                <Button variant="ghost" asChild className="mb-8 font-bold text-zinc-500 hover:text-primary gap-2">
+                    <Link href="/community">
+                        <ChevronLeft size={20} /> Back to Forum
+                    </Link>
+                </Button>
 
-                {/* Post Content */}
-                <article className="bg-white rounded-[3rem] p-8 md:p-12 shadow-sm border border-border-soft mb-12">
-                    <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 bg-zinc-50 rounded-2xl overflow-hidden border border-zinc-100 flex items-center justify-center font-black text-primary text-xl shadow-inner">
-                                {post.profiles.image_url ? (
-                                    <img src={post.profiles.image_url} alt="" className="w-full h-full object-cover" />
-                                ) : (
-                                    post.profiles.full_name?.charAt(0)
-                                )}
-                            </div>
-                            <div>
-                                <h3 className="font-black text-primary text-lg flex items-center gap-2">
-                                    {post.profiles.full_name}
-                                    {post.profiles.verification_status === 'verified' && (
-                                        <CheckCircle2 size={16} className="text-primary" />
-                                    )}
-                                </h3>
-                                <div className="flex items-center gap-2 text-zinc-400 text-xs font-bold uppercase tracking-widest">
-                                    <Clock size={14} />
-                                    {new Date(post.created_at).toLocaleDateString()} at {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                <Card className="rounded-[3rem] border-none shadow-sm overflow-hidden bg-white mb-12">
+                    <CardHeader className="p-8 md:p-12 pb-6">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-4">
+                                <Avatar className="h-14 w-14 rounded-2xl border-2 border-white shadow-sm bg-zinc-50">
+                                    <AvatarImage src={post.profiles.image_url} className="object-cover" />
+                                    <AvatarFallback className="text-primary font-black text-xl">
+                                        {post.profiles.full_name?.charAt(0)}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <h3 className="font-black text-primary text-lg flex items-center gap-2">
+                                        {post.profiles.full_name}
+                                        {post.profiles.verification_status === 'verified' && (
+                                            <CheckCircle2 size={16} className="text-primary" />
+                                        )}
+                                    </h3>
+                                    <div className="flex items-center gap-2 text-zinc-400 text-[10px] font-black uppercase tracking-widest">
+                                        <Clock size={12} className="text-primary" />
+                                        {new Date(post.created_at).toLocaleDateString()} at {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
                                 </div>
                             </div>
+                            <Badge variant="secondary" className="bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-xl border-none">
+                                {post.category}
+                            </Badge>
                         </div>
-                        <span className="px-5 py-2 bg-bg-soft text-primary-soft text-xs font-black uppercase tracking-[0.2em] rounded-xl h-fit">
-                            {post.category}
-                        </span>
-                    </div>
-
-                    <h1 className="text-3xl md:text-4xl font-black text-primary mb-8 leading-tight tracking-tight">
-                        {post.title}
-                    </h1>
-
-                    <div className="prose prose-zinc max-w-none">
+                        <CardTitle className="text-3xl md:text-4xl font-black text-primary leading-tight tracking-tight">
+                            {post.title}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-8 md:p-12 pt-0">
                         <p className="text-zinc-600 font-medium text-lg leading-relaxed whitespace-pre-wrap">
                             {post.content}
                         </p>
-                    </div>
-                </article>
+                    </CardContent>
+                </Card>
 
-                {/* Comments Section */}
                 <section className="space-y-8">
-                    <h2 className="text-2xl font-black text-primary flex items-center gap-3">
-                        <MessageCircle className="text-primary" />
-                        Responses
-                        <span className="text-zinc-300 font-bold ml-1">({comments.length})</span>
-                    </h2>
+                    <div className="flex items-center gap-3 px-2">
+                        <MessageCircle className="text-primary h-6 w-6" />
+                        <h2 className="text-2xl font-black text-primary">
+                            Responses
+                            <span className="text-zinc-300 font-bold ml-2">({comments.length})</span>
+                        </h2>
+                    </div>
 
-                    {/* New Comment Form */}
-                    <div className="bg-white rounded-[2.5rem] p-8 border border-border-soft shadow-sm relative overflow-hidden">
-                        {/* Decorative Background Element */}
+                    <Card className="rounded-[2.5rem] p-8 md:p-10 border-none shadow-sm bg-white relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
 
                         {!currentUser ? (
-                            <div className="text-center py-6">
-                                <p className="text-zinc-500 font-bold mb-4">Please login to join the discussion.</p>
-                                <Link href="/login" className="px-8 py-3 bg-primary text-white font-black rounded-xl">Login Now</Link>
+                            <div className="text-center py-10">
+                                <p className="text-zinc-500 font-black text-sm uppercase tracking-widest mb-6">Join the conversation</p>
+                                <Button asChild className="h-12 px-10 rounded-xl font-black shadow-lg">
+                                    <Link href="/login">Login to Comment</Link>
+                                </Button>
                             </div>
                         ) : (
-                            <form onSubmit={handleCommentSubmit} className="space-y-4">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-8 h-8 bg-zinc-50 rounded-lg flex items-center justify-center text-primary font-black text-xs border border-zinc-100">
-                                        {currentUser.email?.charAt(0).toUpperCase()}
-                                    </div>
-                                    <span className="text-sm font-black text-zinc-500">Posting as {currentUser.email?.split('@')[0]}</span>
+                            <form onSubmit={handleCommentSubmit} className="space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="h-8 w-8 rounded-lg bg-primary/10 text-primary border-none">
+                                        <AvatarFallback className="font-black text-[10px]">
+                                            {currentUser.email?.charAt(0).toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">Posting as {currentUser.email?.split('@')[0]}</span>
                                 </div>
-                                <textarea
+                                <Textarea
                                     required
-                                    rows={3}
-                                    placeholder="Write your response..."
-                                    className="w-full p-6 bg-zinc-50 border border-zinc-100 rounded-[1.5rem] outline-none focus:border-primary/20 transition-all font-medium text-primary shadow-inner"
+                                    rows={4}
+                                    placeholder="Share your thoughts..."
+                                    className="w-full p-6 bg-zinc-50 border-zinc-100 rounded-[1.5rem] outline-none focus-visible:ring-primary/20 transition-all font-medium text-primary shadow-inner text-lg resize-none"
                                     value={newComment}
                                     onChange={(e) => setNewComment(e.target.value)}
                                     disabled={commenting}
                                 />
                                 <div className="flex justify-end">
-                                    <button
+                                    <Button
                                         disabled={commenting || !newComment.trim()}
                                         type="submit"
-                                        className="px-8 py-4 bg-primary text-white font-black rounded-xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:scale-100"
+                                        className="h-14 px-10 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all gap-2"
                                     >
                                         {commenting ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
                                         Post Comment
-                                    </button>
+                                    </Button>
                                 </div>
                             </form>
                         )}
-                    </div>
+                    </Card>
 
-                    {/* Comments List */}
-                    <div className="space-y-4 pt-4">
+                    <div className="space-y-6 pt-4">
                         {comments.length === 0 ? (
-                            <div className="text-center py-16 bg-zinc-100/30 rounded-[3rem] border-2 border-dashed border-zinc-100">
-                                <p className="text-zinc-400 font-bold uppercase tracking-widest text-xs">No responses yet. Be the first!</p>
+                            <div className="text-center py-20 bg-zinc-50 rounded-[3rem] border-dashed border-2 border-zinc-100">
+                                <p className="text-zinc-400 font-black uppercase tracking-[0.2em] text-[10px]">Be the first to respond</p>
                             </div>
                         ) : (
                             comments.map((comment) => (
-                                <div key={comment.id} className="bg-white p-8 rounded-[2rem] border border-zinc-50 shadow-sm flex gap-6">
-                                    <div className="w-12 h-12 bg-zinc-50 rounded-xl overflow-hidden flex-shrink-0 border border-zinc-100 flex items-center justify-center font-black text-primary shadow-sm h-fit">
-                                        {comment.profiles.image_url ? (
-                                            <img src={comment.profiles.image_url} alt="" className="w-full h-full object-cover" />
-                                        ) : (
-                                            comment.profiles.full_name?.charAt(0)
-                                        )}
-                                    </div>
+                                <Card key={comment.id} className="rounded-[2rem] border-none shadow-sm bg-white p-8 flex gap-6 hover:shadow-md transition-shadow">
+                                    <Avatar className="h-12 w-12 rounded-xl border bg-zinc-50 shrink-0">
+                                        <AvatarImage src={comment.profiles.image_url} className="object-cover" />
+                                        <AvatarFallback className="text-primary font-black">
+                                            {comment.profiles.full_name?.charAt(0)}
+                                        </AvatarFallback>
+                                    </Avatar>
                                     <div className="flex-grow">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <h4 className="font-black text-primary text-sm">{comment.profiles.full_name}</h4>
-                                            <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h4 className="font-black text-primary text-sm leading-none">{comment.profiles.full_name}</h4>
+                                            <span className="text-[10px] font-black text-zinc-300 uppercase tracking-widest">
                                                 {new Date(comment.created_at).toLocaleDateString()}
                                             </span>
                                         </div>
@@ -314,7 +323,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                                             {comment.content}
                                         </p>
                                     </div>
-                                </div>
+                                </Card>
                             ))
                         )}
                     </div>

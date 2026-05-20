@@ -6,14 +6,19 @@ import {
     Send,
     ArrowLeft,
     Loader2,
-    User,
     CheckCircle2,
     Clock
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import Navbar from "../../components/Navbar";
-import Footer from "../../components/Footer";
 import Link from "next/link";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 interface Message {
     id: string;
@@ -59,7 +64,6 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             }
             setCurrentUser(session.user);
 
-            // Fetch initial messages using API
             const fetchMessages = async () => {
                 try {
                     const { data: { session: currentSession } } = await supabase.auth.getSession();
@@ -75,7 +79,6 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
                     if (data) {
                         setMessages(prev => {
-                            // Merge new messages, avoiding duplicates
                             const existingIds = new Set(prev.map(m => m.id));
                             const uniqueNewMessages = data.filter((m: Message) => !existingIds.has(m.id));
                             if (uniqueNewMessages.length === 0) return prev;
@@ -90,16 +93,10 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                 }
             };
 
-            // Initial fetch
             await fetchMessages();
-
-            // First fetch complete
             setLoading(false);
-
-            // Start polling every 3 seconds
             intervalId = setInterval(fetchMessages, 3000);
 
-            // Fetch other participant
             const { data: participants } = await supabase
                 .from("conversation_participants")
                 .select("profiles(*)")
@@ -127,7 +124,6 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         const text = newMessage;
         setNewMessage("");
 
-        // Optimistic ID for the temporary message
         const tempId = Math.random().toString();
         const optimisticMsg: Message = {
             id: tempId,
@@ -136,14 +132,12 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             created_at: new Date().toISOString(),
         };
 
-        // Add optimistically
         setMessages(prev => [...prev, optimisticMsg]);
 
         try {
             const { data: { session: currentSession } } = await supabase.auth.getSession();
             if (!currentSession) throw new Error("No active session");
 
-            // Use Next.js API for sending
             const response = await fetch('/api/messages', {
                 method: 'POST',
                 headers: {
@@ -161,15 +155,13 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
             const { data } = await response.json();
 
-            // Replace optimistic message with real one from DB
             if (data) {
                 setMessages(prev => prev.map(m => m.id === tempId ? data : m));
             }
         } catch (err) {
             console.error("Error sending message:", err);
-            // Remove optimistic message on error
             setMessages(prev => prev.filter(m => m.id !== tempId));
-            alert("Message failed to send. Please check your connection.");
+            toast.error("Message failed to send.");
             setNewMessage(text);
         } finally {
             setSending(false);
@@ -178,44 +170,46 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-background flex flex-col">
+            <div className="min-h-screen bg-zinc-50 flex flex-col">
                 <Navbar />
                 <div className="flex-grow flex items-center justify-center">
                     <Loader2 className="animate-spin text-primary" size={48} />
                 </div>
-                <Footer />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-background flex flex-col font-sans">
-            <main className="flex-grow flex flex-col h-screen overflow-hidden">
+        <div className="min-h-screen bg-zinc-50 flex flex-col font-sans overflow-hidden h-screen">
+            <Navbar />
+            <main className="flex-grow flex flex-col overflow-hidden relative">
                 {/* Chat Header */}
-                <header className="bg-white border-b border-border-soft px-8 py-4 flex items-center justify-between shadow-sm z-10">
+                <header className="bg-white/90 backdrop-blur-xl border-b px-6 py-4 flex items-center justify-between shadow-sm z-20">
                     <div className="flex items-center gap-4">
-                        <Link href="/messages" className="p-2 hover:bg-zinc-50 rounded-xl transition-colors">
-                            <ArrowLeft size={20} className="text-zinc-400" />
-                        </Link>
+                        <Button variant="ghost" size="icon" asChild className="rounded-xl text-zinc-400">
+                            <Link href="/messages">
+                                <ArrowLeft size={20} />
+                            </Link>
+                        </Button>
                         {otherParticipant && (
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-primary/5 text-primary rounded-xl overflow-hidden border border-zinc-50">
-                                    {otherParticipant.image_url ? (
-                                        <img src={otherParticipant.image_url} alt="" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center font-black">
-                                            {otherParticipant.full_name.charAt(0)}
-                                        </div>
-                                    )}
-                                </div>
+                                <Avatar className="h-10 w-10 rounded-2xl border-2 border-white shadow-sm bg-primary/5">
+                                    <AvatarImage src={otherParticipant.image_url} className="object-cover" />
+                                    <AvatarFallback className="text-primary font-black">
+                                        {otherParticipant.full_name.charAt(0)}
+                                    </AvatarFallback>
+                                </Avatar>
                                 <div>
-                                    <h2 className="font-black text-primary leading-none mb-1 flex items-center gap-1.5">
+                                    <h2 className="font-black text-primary leading-none mb-1 flex items-center gap-1.5 text-lg">
                                         {otherParticipant.full_name}
                                         {otherParticipant.verification_status === 'verified' && (
-                                            <CheckCircle2 size={14} className="text-primary" />
+                                            <CheckCircle2 size={16} className="text-green-500" />
                                         )}
                                     </h2>
-                                    <p className="text-[10px] font-bold text-green-500 uppercase tracking-widest">Active Now</p>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                                        <p className="text-[10px] font-black text-green-500 uppercase tracking-widest">Active Now</p>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -223,11 +217,13 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                 </header>
 
                 {/* Messages Area */}
-                <div className="flex-grow overflow-y-auto p-4 md:p-8 space-y-4 bg-zinc-50/50">
-                    <div className="max-w-3xl mx-auto space-y-4">
+                <ScrollArea className="flex-grow p-4 md:p-8 bg-zinc-50/30">
+                    <div className="max-w-3xl mx-auto space-y-6 py-4">
                         {messages.length === 0 && (
                             <div className="py-20 text-center">
-                                <p className="text-zinc-400 font-bold uppercase tracking-widest text-[10px]">Your conversation starts here</p>
+                                <Badge variant="secondary" className="px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest bg-white border-zinc-100 text-zinc-400">
+                                    Your conversation starts here
+                                </Badge>
                             </div>
                         )}
                         {messages.map((msg) => {
@@ -235,17 +231,17 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                             return (
                                 <div
                                     key={msg.id}
-                                    className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
+                                    className={`flex animate-in fade-in slide-in-from-bottom-2 duration-300 ${isMe ? 'justify-end' : 'justify-start'}`}
                                 >
                                     <div
-                                        className={`max-w-[80%] md:max-w-[60%] px-6 py-3 rounded-2xl shadow-sm text-sm font-medium
+                                        className={`max-w-[80%] md:max-w-[65%] px-6 py-4 rounded-[1.5rem] shadow-sm text-sm font-medium leading-relaxed
                                             ${isMe
-                                                ? 'bg-primary text-white rounded-tr-none'
-                                                : 'bg-white text-primary border border-white rounded-tl-none'}`}
+                                                ? 'bg-primary text-white rounded-tr-none shadow-primary/10'
+                                                : 'bg-white text-primary border border-zinc-100 rounded-tl-none shadow-zinc-200/50'}`}
                                     >
                                         {msg.text}
-                                        <div className={`mt-1 flex items-center gap-1 text-[9px] font-bold uppercase tracking-tighter
-                                            ${isMe ? 'text-white/50' : 'text-zinc-300'}`}>
+                                        <div className={`mt-2 flex items-center gap-1 text-[9px] font-black uppercase tracking-tighter
+                                            ${isMe ? 'text-white/60' : 'text-zinc-400'}`}>
                                             <Clock size={10} />
                                             {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </div>
@@ -253,33 +249,32 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                                 </div>
                             );
                         })}
-                        <div ref={messagesEndRef} />
+                        <div ref={messagesEndRef} className="h-4" />
                     </div>
-                </div>
+                </ScrollArea>
 
                 {/* Input Area */}
-                <div className="bg-white p-4 md:p-8 border-t border-border-soft">
+                <div className="bg-white p-6 md:p-8 border-t z-20">
                     <div className="max-w-3xl mx-auto">
                         <form onSubmit={handleSendMessage} className="relative flex items-center gap-4">
-                            <input
-                                type="text"
-                                className="flex-grow p-6 bg-zinc-50 border border-zinc-100 rounded-[1.5rem] outline-none focus:border-primary/20 transition-all font-medium text-primary shadow-inner"
+                            <Input
+                                className="flex-grow h-16 px-8 bg-zinc-50 border-zinc-100 rounded-[2rem] outline-none focus-visible:ring-primary/20 font-medium text-primary shadow-inner text-lg"
                                 placeholder="Type your message..."
                                 value={newMessage}
                                 onChange={(e) => setNewMessage(e.target.value)}
                                 disabled={sending}
                             />
-                            <button
+                            <Button
                                 type="submit"
                                 disabled={!newMessage.trim() || sending}
-                                className="w-16 h-16 bg-primary text-white rounded-[1.5rem] flex items-center justify-center shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
+                                className="h-16 w-16 bg-primary text-white rounded-[2rem] flex items-center justify-center shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all p-0"
                             >
                                 {sending ? (
-                                    <Loader2 className="animate-spin" size={24} />
+                                    <Loader2 className="animate-spin" size={28} />
                                 ) : (
-                                    <Send size={24} />
+                                    <Send size={28} />
                                 )}
-                            </button>
+                            </Button>
                         </form>
                     </div>
                 </div>

@@ -3,35 +3,65 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import {
     ShieldCheck,
     Eye,
     EyeOff,
     ArrowRight,
     CheckCircle2,
-    AlertCircle,
     Loader2
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
+import { Button } from "@/components/ui/button";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+    FormDescription,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
+
+const signupSchema = z.object({
+    fullName: z.string().min(3, "Full name must be at least 3 characters."),
+    email: z.string().email("Invalid email address. Please use a university email."),
+    phoneNumber: z.string().length(11, "Phone number must be exactly 11 digits."),
+    university: z.string().min(2, "Please enter your university name."),
+    password: z.string().min(6, "Password must be at least 6 characters."),
+    agreed: z.boolean().refine((val) => val === true, {
+        message: "You must agree to the terms and guidelines.",
+    }),
+});
+
+type SignupFormValues = z.infer<typeof signupSchema>;
+
 export default function SignupPage() {
     const router = useRouter();
-
-    // Form State
-    const [formData, setFormData] = useState({
-        fullName: "",
-        email: "",
-        phoneNumber: "",
-        password: "",
-        university: "",
-    });
-
-    // UI State
     const [showPassword, setShowPassword] = useState(false);
-    const [agreed, setAgreed] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+
+    const form = useForm<SignupFormValues>({
+        resolver: zodResolver(signupSchema),
+        defaultValues: {
+            fullName: "",
+            email: "",
+            phoneNumber: "",
+            university: "",
+            password: "",
+            agreed: false,
+        },
+    });
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -43,16 +73,6 @@ export default function SignupPage() {
         checkAuth();
     }, [router]);
 
-    // Validation
-    const validatePhone = (phone: string) => {
-        // Exactly 11 digits
-        return /^\d{11}$/.test(phone);
-    };
-
-    const validateEmail = (email: string) => {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    };
-
     const formatPhoneNumber = (phone: string) => {
         let formatted = phone;
         if (formatted.startsWith("0")) {
@@ -61,49 +81,27 @@ export default function SignupPage() {
         return `+234${formatted}`;
     };
 
-    const handleSignup = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSignup = async (values: SignupFormValues) => {
         setError(null);
         setLoading(true);
 
-        // Initial Validation
-        if (!validateEmail(formData.email)) {
-            setError("Please enter a valid email address.");
-            setLoading(false);
-            return;
-        }
-
-        if (!validatePhone(formData.phoneNumber)) {
-            setError("Phone number must be exactly 11 digits.");
-            setLoading(false);
-            return;
-        }
-
-        if (formData.password.length < 6) {
-            setError("Password too short.");
-            setLoading(false);
-            return;
-        }
-
         try {
-            // 1. Supabase Auth Sign Up
             const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: formData.email,
-                password: formData.password,
+                email: values.email,
+                password: values.password,
             });
 
             if (authError) throw authError;
 
             if (authData.user) {
-                // 2. Insert into profiles table
                 const { error: profileError } = await supabase
                     .from("profiles")
                     .insert([
                         {
                             id: authData.user.id,
-                            full_name: formData.fullName,
-                            phone_number: formatPhoneNumber(formData.phoneNumber),
-                            university: "Unspecified University", // General default
+                            full_name: values.fullName,
+                            phone_number: formatPhoneNumber(values.phoneNumber),
+                            university: values.university,
                             is_freelancer: false,
                         },
                     ]);
@@ -111,7 +109,6 @@ export default function SignupPage() {
                 if (profileError) throw profileError;
 
                 setSuccess(true);
-                // Redirect after delay
                 setTimeout(() => {
                     router.push("/dashboard");
                 }, 3000);
@@ -133,173 +130,214 @@ export default function SignupPage() {
     if (success) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-zinc-50 px-4">
-                <div className="max-w-md w-full bg-white p-12 rounded-[2.5rem] shadow-xl border border-border-soft text-center space-y-6">
-                    <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Card className="max-w-md w-full rounded-[2.5rem] shadow-xl border-border-soft text-center p-8 md:p-12 space-y-6">
+                    <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                         <CheckCircle2 size={48} />
                     </div>
-                    <h2 className="text-3xl font-black text-primary">Welcome Aboard!</h2>
-                    <p className="text-zinc-600 font-medium leading-relaxed">
-                        Your account has been created successfully. Ready to dive into the campus economy?
-                    </p>
+                    <CardHeader className="p-0">
+                        <CardTitle className="text-3xl font-black text-primary">Welcome Aboard!</CardTitle>
+                        <CardDescription className="text-zinc-600 font-medium leading-relaxed">
+                            Your account has been created successfully. Ready to dive into the campus economy?
+                        </CardDescription>
+                    </CardHeader>
                     <div className="pt-4 flex flex-col gap-4">
-                        <Link
-                            href="/dashboard"
-                            className="w-full py-4 bg-primary text-white font-black rounded-2xl shadow-xl hover:scale-105 transition-all text-center"
+                        <Button
+                            className="w-full h-14 bg-primary text-white font-black rounded-2xl shadow-xl hover:scale-105 transition-all"
+                            asChild
                         >
-                            Go to Dashboard
-                        </Link>
+                            <Link href="/dashboard">Go to Dashboard</Link>
+                        </Button>
                         <div className="flex items-center justify-center gap-2 text-zinc-400 text-sm font-bold">
                             <Loader2 className="animate-spin" size={16} />
                             Auto-redirecting...
                         </div>
                     </div>
-                </div>
+                </Card>
             </div>
         );
     }
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-50 px-4 py-12">
-            {/* Logo Link back to home */}
-            <Link href="/" className="mb-8 flex items-center gap-2">
-                <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-white">
-                    <ShieldCheck size={24} />
+            <Link href="/" className="mb-8 flex items-center gap-3 group">
+                <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
+                    <ShieldCheck size={28} />
                 </div>
-                <span className="text-3xl font-black text-primary tracking-tighter italic">UniAGORA</span>
+                <span className="text-4xl font-black text-primary tracking-tighter italic">UniAGORA</span>
             </Link>
 
-            <div className="max-w-md w-full bg-white p-8 md:p-12 rounded-[2.5rem] shadow-xl border border-border-soft">
-                <div className="text-center mb-10">
-                    <h1 className="text-3xl font-black text-primary mb-2">Join the Campus Economy</h1>
-                    <p className="text-zinc-500 font-medium">Create your verified student account</p>
-                </div>
+            <Card className="max-w-md w-full rounded-[2.5rem] shadow-xl border-border-soft overflow-hidden">
+                <CardHeader className="text-center pt-10 pb-6">
+                    <CardTitle className="text-3xl font-black text-primary">Join the Economy</CardTitle>
+                    <CardDescription className="font-medium text-zinc-500">Create your verified student account</CardDescription>
+                </CardHeader>
+                <CardContent className="px-8 md:px-12 pb-12">
+                    {error && (
+                        <Alert variant="destructive" className="mb-8 rounded-2xl border-red-100 bg-red-50 text-red-700">
+                            <AlertDescription className="font-bold">{error}</AlertDescription>
+                        </Alert>
+                    )}
 
-                {error && (
-                    <div className="mb-8 p-4 bg-red-50 border border-red-100 text-red-700 text-sm font-bold rounded-2xl flex items-center gap-3">
-                        <AlertCircle size={18} className="shrink-0" />
-                        {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleSignup} className="space-y-6">
-                    {/* Full Name */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold text-primary ml-1">Full Name</label>
-                        <input
-                            required
-                            type="text"
-                            placeholder="e.g. Musa Ibrahim"
-                            className="w-full p-4 bg-bg-soft/50 border border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all"
-                            value={formData.fullName}
-                            onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                        />
-                    </div>
-
-                    {/* Email Address */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold text-primary ml-1">Email Address</label>
-                        <input
-                            required
-                            type="email"
-                            placeholder="student@university.edu.ng"
-                            className="w-full p-4 bg-bg-soft/50 border border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        />
-                    </div>
-
-                    {/* Phone Number */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold text-primary ml-1">Phone Number</label>
-                        <input
-                            required
-                            type="tel"
-                            maxLength={11}
-                            placeholder="080..."
-                            className="w-full p-4 bg-bg-soft/50 border border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all"
-                            value={formData.phoneNumber}
-                            onChange={(e) => {
-                                const value = e.target.value.replace(/\D/g, "");
-                                setFormData({ ...formData, phoneNumber: value });
-                            }}
-                        />
-                        <p className="text-[11px] font-bold text-zinc-400 ml-1 uppercase tracking-wider">
-                            Used for students to contact you
-                        </p>
-                    </div>
-
-                    {/* University */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold text-primary ml-1">University</label>
-                        <input
-                            type="text"
-                            placeholder="e.g. University of Lagos"
-                            className="w-full p-4 bg-bg-soft/50 border border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all"
-                            onChange={(e) => setFormData({ ...formData, ...{ university: e.target.value } })}
-                        />
-                    </div>
-
-                    {/* Password */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold text-primary ml-1">Password</label>
-                        <div className="relative">
-                            <input
-                                required
-                                type={showPassword ? "text" : "password"}
-                                placeholder="••••••••"
-                                className="w-full p-4 bg-bg-soft/50 border border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all pr-12"
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(handleSignup)} className="space-y-6">
+                            <FormField
+                                control={form.control}
+                                name="fullName"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-2">
+                                        <FormLabel className="text-sm font-bold text-primary ml-1">Full Name</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="e.g. Musa Ibrahim"
+                                                className="h-14 px-4 bg-muted/50 border-transparent focus-visible:ring-primary rounded-2xl"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage className="ml-1 text-[11px] font-bold" />
+                                    </FormItem>
+                                )}
                             />
-                            <button
-                                type="button"
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-primary transition-colors"
-                                onClick={() => setShowPassword(!showPassword)}
+
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-2">
+                                        <FormLabel className="text-sm font-bold text-primary ml-1">Email Address</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="student@university.edu.ng"
+                                                className="h-14 px-4 bg-muted/50 border-transparent focus-visible:ring-primary rounded-2xl"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage className="ml-1 text-[11px] font-bold" />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="phoneNumber"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-2">
+                                        <FormLabel className="text-sm font-bold text-primary ml-1">Phone Number</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="080..."
+                                                maxLength={11}
+                                                className="h-14 px-4 bg-muted/50 border-transparent focus-visible:ring-primary rounded-2xl"
+                                                {...field}
+                                                onChange={(e) => {
+                                                    const value = e.target.value.replace(/\D/g, "");
+                                                    field.onChange(value);
+                                                }}
+                                            />
+                                        </FormControl>
+                                        <FormDescription className="ml-1 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                                            Used for students to contact you
+                                        </FormDescription>
+                                        <FormMessage className="ml-1 text-[11px] font-bold" />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="university"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-2">
+                                        <FormLabel className="text-sm font-bold text-primary ml-1">University</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="e.g. University of Lagos"
+                                                className="h-14 px-4 bg-muted/50 border-transparent focus-visible:ring-primary rounded-2xl"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage className="ml-1 text-[11px] font-bold" />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="password"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-2">
+                                        <FormLabel className="text-sm font-bold text-primary ml-1">Password</FormLabel>
+                                        <FormControl>
+                                            <div className="relative">
+                                                <Input
+                                                    type={showPassword ? "text" : "password"}
+                                                    placeholder="••••••••"
+                                                    className="h-14 px-4 bg-muted/50 border-transparent focus-visible:ring-primary rounded-2xl pr-12"
+                                                    {...field}
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary hover:bg-transparent"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                >
+                                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                                </Button>
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage className="ml-1 text-[11px] font-bold" />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="agreed"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 py-2">
+                                        <FormControl>
+                                            <Checkbox
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                                className="h-5 w-5 border-2"
+                                            />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel className="text-xs text-muted-foreground font-medium leading-relaxed">
+                                                I agree to the{" "}
+                                                <Link href="/terms" target="_blank" className="text-primary font-bold hover:underline">
+                                                    Terms of Service
+                                                </Link>{" "}
+                                                and{" "}
+                                                <Link href="/community-guidelines" target="_blank" className="text-primary font-bold hover:underline">
+                                                    Community Guidelines
+                                                </Link>.
+                                            </FormLabel>
+                                            <FormMessage className="text-[11px] font-bold" />
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+
+                            <Button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full h-14 bg-primary text-white font-black text-lg rounded-2xl shadow-xl hover:bg-primary/90 active:scale-95 transition-all gap-2 mt-4"
                             >
-                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                            </button>
-                        </div>
-                    </div>
+                                {loading ? <Loader2 className="animate-spin" size={24} /> : (
+                                    <>Create Account <ArrowRight size={20} /></>
+                                )}
+                            </Button>
 
-                    {/* Legal Checkbox */}
-                    <div className="flex items-start gap-3 py-2">
-                        <input
-                            id="legal"
-                            type="checkbox"
-                            className="mt-1 w-5 h-5 accent-primary cursor-pointer"
-                            checked={agreed}
-                            onChange={(e) => setAgreed(e.target.checked)}
-                        />
-                        <label htmlFor="legal" className="text-xs text-zinc-600 leading-relaxed cursor-pointer select-none">
-                            I agree to the{" "}
-                            <Link href="/terms" target="_blank" className="text-primary font-bold hover:underline">
-                                Terms of Service
-                            </Link>{" "}
-                            and{" "}
-                            <Link href="/community-guidelines" target="_blank" className="text-primary font-bold hover:underline">
-                                Community Guidelines
-                            </Link>.
-                        </label>
-                    </div>
-
-                    {/* Buttons */}
-                    <button
-                        disabled={!agreed || loading}
-                        type="submit"
-                        className="w-full py-5 bg-primary disabled:opacity-50 disabled:cursor-not-allowed text-white font-black text-lg rounded-2xl shadow-xl hover:bg-green-900 active:scale-95 transition-all flex items-center justify-center gap-2 mt-4"
-                    >
-                        {loading ? <Loader2 className="animate-spin" size={24} /> : (
-                            <>Create Account <ArrowRight size={20} /></>
-                        )}
-                    </button>
-
-                    <div className="text-center pt-6">
-                        <Link href="/login" className="text-sm font-bold text-accent hover:underline">
-                            Already have an account? Log In
-                        </Link>
-                    </div>
-                </form>
-            </div>
+                            <div className="text-center pt-6">
+                                <Link href="/login" className="text-sm font-bold text-accent hover:underline">
+                                    Already have an account? Log In
+                                </Link>
+                            </div>
+                        </form>
+                    </Form>
+                </CardContent>
+            </Card>
         </div>
     );
 }

@@ -8,15 +8,22 @@ import {
     Users,
     ChevronRight,
     Trash2,
-    CheckCircle2,
     Loader2,
     ArrowLeft,
-    Clock
+    Clock,
+    X
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Link from "next/link";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function NotificationsPage() {
     const router = useRouter();
@@ -60,13 +67,17 @@ export default function NotificationsPage() {
     };
 
     const deleteNotification = async (id: string) => {
-        const { error } = await supabase
-            .from("notifications")
-            .delete()
-            .eq("id", id);
+        try {
+            const { error } = await supabase
+                .from("notifications")
+                .delete()
+                .eq("id", id);
 
-        if (!error) {
+            if (error) throw error;
             setNotifications(prev => prev.filter(n => n.id !== id));
+            toast.success("Notification removed.");
+        } catch (err) {
+            toast.error("Failed to delete notification.");
         }
     };
 
@@ -96,74 +107,99 @@ export default function NotificationsPage() {
             <Navbar />
 
             <main className="flex-grow container mx-auto px-4 py-12 max-w-4xl">
-                <header className="mb-12 flex items-center justify-between">
-                    <div>
-                        <Link href="/dashboard" className="inline-flex items-center gap-2 text-zinc-400 hover:text-primary font-bold mb-4 transition-colors">
+                <header className="mb-12">
+                    <Button variant="ghost" asChild className="mb-6 font-bold text-zinc-400 hover:text-primary gap-2 p-0 h-auto hover:bg-transparent">
+                        <Link href="/dashboard">
                             <ArrowLeft size={16} /> Back to Dashboard
                         </Link>
-                        <h1 className="text-4xl font-black text-primary tracking-tight flex items-center gap-3">
-                            <Bell className="text-accent" /> Activity Center
-                        </h1>
-                        <p className="text-zinc-500 font-medium mt-1">Stay updated with your latest interactions</p>
+                    </Button>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="space-y-2">
+                            <h1 className="text-5xl font-black text-primary tracking-tight flex items-center gap-4">
+                                <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center shadow-inner">
+                                    <Bell size={32} className="text-primary" />
+                                </div>
+                                Notifications
+                            </h1>
+                            <p className="text-zinc-500 font-medium text-lg">Stay updated with your latest interactions</p>
+                        </div>
                     </div>
                 </header>
 
                 <div className="space-y-4">
                     {notifications.length === 0 ? (
-                        <div className="bg-white p-20 rounded-[3rem] border border-dashed border-zinc-200 text-center shadow-sm">
-                            <Bell size={48} className="mx-auto text-zinc-100 mb-6" />
-                            <h3 className="text-xl font-black text-primary mb-2">No notifications yet</h3>
-                            <p className="text-zinc-400 font-medium mb-8">We'll alert you here when someone messages you or replies to your post.</p>
-                            <Link href="/marketplace" className="px-8 py-4 bg-primary text-white font-black rounded-2xl shadow-lg shadow-primary/20">
-                                Explore Marketplace
-                            </Link>
-                        </div>
-                    ) : (
-                        notifications.map((notif) => (
-                            <div
-                                key={notif.id}
-                                className={`group bg-white p-6 rounded-[2rem] border transition-all hover:shadow-xl hover:border-primary/10 flex items-center gap-6 ${!notif.is_read ? 'border-primary/20 shadow-md ring-1 ring-primary/5' : 'border-border-soft'}`}
-                            >
-                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${notif.type === 'message' ? 'bg-blue-50 text-blue-500' :
-                                        notif.type === 'reply' ? 'bg-purple-50 text-purple-500' :
-                                            'bg-zinc-50 text-zinc-400'
-                                    }`}>
-                                    {notif.type === 'message' ? <MessageSquare size={24} /> :
-                                        notif.type === 'reply' ? <Users size={24} /> :
-                                            <Bell size={24} />}
-                                </div>
-
-                                <div className="flex-grow cursor-pointer" onClick={() => handleNotificationClick(notif)}>
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <h4 className="font-black text-primary">{notif.title}</h4>
-                                        {!notif.is_read && <span className="w-2 h-2 bg-accent rounded-full"></span>}
-                                    </div>
-                                    <p className="text-zinc-500 font-medium text-sm leading-relaxed mb-2">{notif.content}</p>
-                                    <div className="flex items-center gap-3 text-[10px] font-bold text-zinc-300 uppercase tracking-widest">
-                                        <span className="flex items-center gap-1"><Clock size={12} /> {new Date(notif.created_at).toLocaleString()}</span>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => deleteNotification(notif.id)}
-                                        className="p-3 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                                        title="Delete"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
-                                    {notif.link && (
-                                        <button
-                                            onClick={() => handleNotificationClick(notif)}
-                                            className="p-3 text-zinc-300 hover:text-primary hover:bg-zinc-50 rounded-xl transition-all"
-                                            title="View"
-                                        >
-                                            <ChevronRight size={18} />
-                                        </button>
-                                    )}
-                                </div>
+                        <Card className="rounded-[3rem] p-24 border-dashed border-2 border-zinc-200 bg-white/50 text-center flex flex-col items-center">
+                            <div className="w-24 h-24 bg-white rounded-[2.5rem] shadow-xl flex items-center justify-center mb-8 text-zinc-200">
+                                <Bell size={48} />
                             </div>
-                        ))
+                            <CardTitle className="text-3xl font-black text-primary mb-3">No notifications yet</CardTitle>
+                            <CardDescription className="text-zinc-500 mb-10 max-w-sm font-medium text-lg leading-relaxed">
+                                We&apos;ll alert you here when someone messages you or interacts with your activity.
+                            </CardDescription>
+                            <Button asChild className="h-14 px-10 bg-primary text-white font-black rounded-2xl shadow-2xl shadow-primary/30">
+                                <Link href="/marketplace">Explore Marketplace</Link>
+                            </Button>
+                        </Card>
+                    ) : (
+                        <div className="space-y-4">
+                            {notifications.map((notif) => (
+                                <Card
+                                    key={notif.id}
+                                    className={`group rounded-[2.5rem] border-none transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 flex items-center gap-6 p-8 relative overflow-hidden ${!notif.is_read ? 'bg-white shadow-md ring-2 ring-primary/5 border-primary/20' : 'bg-white/70 shadow-sm opacity-80'}`}
+                                >
+                                    {!notif.is_read && (
+                                        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary"></div>
+                                    )}
+                                    
+                                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border ${
+                                        notif.type === 'message' ? 'bg-blue-50 text-blue-500 border-blue-100' :
+                                        notif.type === 'reply' ? 'bg-purple-50 text-purple-500 border-purple-100' :
+                                        'bg-zinc-50 text-zinc-400 border-zinc-100'
+                                    }`}>
+                                        {notif.type === 'message' ? <MessageSquare size={28} /> :
+                                            notif.type === 'reply' ? <Users size={28} /> :
+                                                <Bell size={28} />}
+                                    </div>
+
+                                    <div className="flex-grow cursor-pointer group-hover:translate-x-1 transition-transform duration-300" onClick={() => handleNotificationClick(notif)}>
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <h4 className="text-xl font-black text-primary leading-none">{notif.title}</h4>
+                                            {!notif.is_read && (
+                                                <Badge className="h-2 w-2 p-0 rounded-full bg-accent animate-pulse" />
+                                            )}
+                                        </div>
+                                        <p className="text-zinc-500 font-medium text-lg leading-relaxed mb-4">{notif.content}</p>
+                                        <div className="flex items-center gap-3 text-[10px] font-black text-zinc-400 uppercase tracking-widest bg-zinc-50 w-fit px-3 py-1 rounded-lg">
+                                            <Clock size={12} className="text-primary" /> 
+                                            {new Date(notif.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => deleteNotification(notif.id)}
+                                            className="h-12 w-12 rounded-xl text-zinc-300 hover:text-red-500 hover:bg-red-50 transition-all"
+                                            title="Delete"
+                                        >
+                                            <Trash2 size={20} />
+                                        </Button>
+                                        {notif.link && (
+                                            <Button
+                                                variant="secondary"
+                                                size="icon"
+                                                onClick={() => handleNotificationClick(notif)}
+                                                className="h-12 w-12 rounded-xl bg-zinc-100 hover:bg-primary hover:text-white transition-all shadow-sm"
+                                                title="View"
+                                            >
+                                                <ChevronRight size={22} />
+                                            </Button>
+                                        )}
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
                     )}
                 </div>
             </main>

@@ -19,6 +19,17 @@
   /* Gray-200 */
   --text-soft: #4B5563;
   /* Gray-600 */
+
+  /* Shadcn UI Variables */
+  --primary-foreground: #FFFFFF;
+  --secondary: #F3F4F6;
+  --secondary-foreground: #003D29;
+  --accent-foreground: #003D29;
+  --muted: #F3F4F6;
+  --muted-foreground: #4B5563;
+  --border: #E5E7EB;
+  --ring: #003D29;
+  --radius: 0.75rem;
 }
 
 /* Navy Theme Override - Keeping as requested but tailored */
