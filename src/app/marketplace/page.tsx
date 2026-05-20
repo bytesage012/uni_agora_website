@@ -23,7 +23,6 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface Profile {
     full_name: string;
@@ -44,10 +43,43 @@ interface Service {
     reviewCount?: number;
 }
 
+function CategoryPlaceholder({ category }: { category: string }) {
+    const colors: Record<string, string> = {
+        "Graphic Design": "from-purple-600 to-indigo-950",
+        "Writing & Translation": "from-blue-600 to-cyan-950",
+        "Tutoring & Lessons": "from-amber-500 to-orange-950",
+        "Tech & Programming": "from-teal-600 to-emerald-950",
+        "Photography & Video": "from-pink-600 to-rose-950",
+        "Fashion & Style": "from-fuchsia-500 to-pink-950",
+        "Food & Groceries": "from-green-600 to-yellow-950",
+        "Beauty & Care": "from-rose-500 to-red-950",
+        "Repairs & Maintenance": "from-zinc-600 to-zinc-950",
+        "default": "from-emerald-700 to-emerald-950"
+    };
+
+    const gradient = colors[category] || colors["default"];
+
+    return (
+        <div className={`w-full h-full bg-gradient-to-br ${gradient} flex flex-col justify-between p-6 text-white relative overflow-hidden select-none`}>
+            <div className="absolute -top-10 -right-10 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-black/20 rounded-full blur-xl"></div>
+            
+            <span className="text-[8px] font-black uppercase tracking-widest bg-white/20 backdrop-blur-md px-3 py-1 rounded-full w-fit">
+                UniAGORA
+            </span>
+
+            <div className="space-y-0.5 z-10 text-left">
+                <p className="text-[10px] font-bold tracking-wider opacity-60 uppercase">Campus Service</p>
+                <p className="text-base font-black tracking-tight leading-none uppercase">{category}</p>
+            </div>
+        </div>
+    );
+}
+
 export default function MarketplacePage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen flex flex-col bg-zinc-50">
+            <div className="min-h-screen flex flex-col bg-[#F8FAF7]">
                 <Navbar />
                 <div className="flex-grow flex items-center justify-center">
                     <Loader2 className="animate-spin text-primary" size={48} />
@@ -172,33 +204,33 @@ function MarketplaceContent() {
     }, [searchQuery, selectedCategory, services]);
 
     return (
-        <div className="min-h-screen flex flex-col bg-zinc-50 font-sans">
+        <div className="min-h-screen flex flex-col bg-[#F8FAF7] font-sans text-[#002217]">
             <Navbar />
 
             <main className="flex-grow flex flex-col">
                 {showFilters && (
-                    <section className="sticky top-[68px] z-30 bg-white/90 backdrop-blur-xl border-b transition-all duration-300 animate-in slide-in-from-top-4">
-                        <div className="max-w-[1440px] mx-auto px-6 md:px-10 py-5">
-                            <div className="flex flex-col md:flex-row items-center gap-10">
-                                <div className="relative w-full md:w-[400px] lg:w-[500px] flex-shrink-0">
-                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                    <section className="sticky top-[68px] z-30 bg-white/80 backdrop-blur-xl border-b border-[#E2EAE4] transition-all duration-300 animate-in fade-in">
+                        <div className="max-w-[1440px] mx-auto px-6 md:px-12 py-5">
+                            <div className="flex flex-col md:flex-row items-center gap-6">
+                                <div className="relative w-full md:w-[320px] lg:w-[420px] flex-shrink-0">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
                                     <Input
                                         placeholder="Search services on campus..."
-                                        className="h-12 pl-12 pr-6 bg-white rounded-full border-zinc-200 shadow-sm focus-visible:ring-primary font-bold text-sm"
+                                        className="h-12 pl-12 pr-6 bg-[#F8FAF7] rounded-2xl border-zinc-200 shadow-inner focus-visible:ring-primary font-bold text-sm"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
 
                                 <ScrollArea className="w-full whitespace-nowrap">
-                                    <div className="flex items-center gap-2 pb-2">
+                                    <div className="flex items-center gap-2 pb-1">
                                         {categories.map((cat) => (
                                             <Button
                                                 key={cat}
                                                 variant={selectedCategory === cat ? "default" : "secondary"}
                                                 size="sm"
                                                 onClick={() => setSelectedCategory(cat)}
-                                                className={`rounded-full px-6 font-black tracking-tight h-10 ${selectedCategory === cat ? 'shadow-lg shadow-primary/20 scale-105' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}
+                                                className={`rounded-xl px-5 font-black tracking-tight h-10 transition-all ${selectedCategory === cat ? 'bg-primary text-white shadow-md shadow-primary/10' : 'bg-white text-zinc-500 hover:bg-[#F0F4F1] border border-zinc-200/50'}`}
                                             >
                                                 {getCategoryLabel(cat)}
                                             </Button>
@@ -211,7 +243,7 @@ function MarketplaceContent() {
                     </section>
                 )}
 
-                <section className="flex-grow max-w-[1440px] mx-auto w-full px-6 md:px-10 py-12">
+                <section className="flex-grow max-w-[1440px] mx-auto w-full px-6 md:px-12 py-12">
                     {loading ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                             {[...Array(6)].map((_, i) => (
@@ -232,12 +264,12 @@ function MarketplaceContent() {
                         </Card>
                     ) : filteredServices.length === 0 ? (
                         <div className="text-center py-32 space-y-6">
-                            <div className="w-24 h-24 bg-zinc-100 rounded-[2rem] flex items-center justify-center text-zinc-300 mx-auto">
-                                <ShoppingBag size={48} />
+                            <div className="w-20 h-20 bg-white rounded-[1.5rem] border border-zinc-200/60 flex items-center justify-center text-zinc-300 mx-auto">
+                                <ShoppingBag size={36} />
                             </div>
                             <div className="space-y-2">
-                                <h2 className="text-2xl font-black text-primary">No results found</h2>
-                                <p className="text-zinc-500 font-medium max-w-xs mx-auto">
+                                <h2 className="text-xl font-black text-primary">No services listed</h2>
+                                <p className="text-zinc-500 font-medium max-w-xs mx-auto text-sm">
                                     Try adjusting your keywords or category filters to find what you&apos;re looking for.
                                 </p>
                             </div>
@@ -255,23 +287,21 @@ function MarketplaceContent() {
                                 <Card
                                     key={service.id}
                                     onClick={() => router.push(`/service/${service.id}`)}
-                                    className="group cursor-pointer rounded-[2rem] border-zinc-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full"
+                                    className="group cursor-pointer border border-[#E2EAE4] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-[2.5rem] overflow-hidden flex flex-col h-full bg-white"
                                 >
-                                    <CardHeader className="p-6">
-                                        <div className="relative aspect-[16/10] rounded-[1.5rem] overflow-hidden bg-zinc-100 mb-4 border border-zinc-50">
+                                    <CardHeader className="p-5 pb-0">
+                                        <div className="relative aspect-[16/10] rounded-[2rem] overflow-hidden bg-[#F8FAF7] border border-[#E2EAE4] shadow-inner">
                                             {service.image_url ? (
-                                                <img src={service.image_url} alt={service.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                                <img src={service.image_url} alt={service.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                                             ) : (
-                                                <div className="flex items-center justify-center h-full text-zinc-300">
-                                                    <ShoppingBag size={48} />
-                                                </div>
+                                                <CategoryPlaceholder category={service.category} />
                                             )}
-                                            <div className="absolute top-3 left-3 flex gap-2">
-                                                <Badge variant="secondary" className="rounded-xl px-3 py-1 font-black text-[10px] uppercase tracking-widest bg-white/90 backdrop-blur-sm shadow-sm border-none">
+                                            <div className="absolute top-4 left-4 flex gap-2">
+                                                <Badge variant="secondary" className="rounded-xl px-3 py-1 font-black text-[9px] uppercase tracking-widest bg-white/95 text-primary shadow-sm border-none">
                                                     {service.category}
                                                 </Badge>
                                                 {service.profiles?.verification_status === 'verified' && (
-                                                    <Badge className="rounded-xl px-3 py-1 font-black text-[10px] uppercase tracking-widest bg-green-500/90 text-white backdrop-blur-sm shadow-sm border-none gap-1">
+                                                    <Badge className="rounded-xl px-3 py-1 font-black text-[9px] uppercase tracking-widest bg-green-500 text-white shadow-sm border-none gap-1">
                                                         <CheckCircle2 size={10} /> Verified
                                                     </Badge>
                                                 )}
@@ -279,50 +309,48 @@ function MarketplaceContent() {
                                         </div>
                                     </CardHeader>
 
-                                    <CardContent className="px-6 py-0 flex-grow">
-                                        <h3 className="text-xl font-black tracking-tight text-primary mb-2 group-hover:text-accent transition-colors line-clamp-2 leading-tight">
+                                    <CardContent className="px-6 pt-5 pb-0 flex-grow text-left">
+                                        <h3 className="text-lg font-black tracking-tight text-primary mb-2 group-hover:text-emerald-700 transition-colors line-clamp-2 leading-snug">
                                             {service.title}
                                         </h3>
 
-                                        <div className="flex items-center gap-1.5 mb-6">
+                                        <div className="flex items-center gap-1.5 mb-5">
                                             {service.avgRating ? (
                                                 <div className="flex items-center gap-1">
-                                                    <Star size={14} className="text-amber-500 fill-amber-500" />
+                                                    <Star size={12} className="text-amber-500 fill-amber-500" />
                                                     <span className="text-xs font-black text-primary">{service.avgRating.toFixed(1)}</span>
                                                     <span className="text-[10px] font-bold text-muted-foreground">({service.reviewCount} reviews)</span>
                                                 </div>
                                             ) : (
-                                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">New Listing</span>
+                                                <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-md">New Listing</span>
                                             )}
                                         </div>
 
                                         <div className="flex items-center gap-3">
-                                            <Avatar className="h-10 w-10 rounded-2xl border shadow-sm">
+                                            <Avatar className="h-9 w-9 rounded-xl border border-zinc-100 shadow-sm">
                                                 <AvatarImage src={service.profiles?.image_url} />
-                                                <AvatarFallback className="bg-primary/5 text-primary font-black">
+                                                <AvatarFallback className="bg-primary/5 text-primary font-black text-xs">
                                                     {service.profiles?.full_name?.charAt(0) || "U"}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <div className="flex flex-col">
-                                                <span className="text-sm font-black text-zinc-700 leading-none">
+                                                <span className="text-xs font-black text-zinc-700 leading-none">
                                                     {service.profiles?.full_name || "Anonymous Helper"}
                                                 </span>
-                                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
-                                                    UNI-MEMBER
+                                                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
+                                                    Campus Member
                                                 </span>
                                             </div>
                                         </div>
                                     </CardContent>
 
-                                    <CardFooter className="p-6 mt-6 border-t border-zinc-50 flex items-center justify-between">
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Budget</span>
-                                            <Badge variant="secondary" className="bg-green-50 text-green-900 hover:bg-green-50 px-4 py-2 font-black text-sm rounded-xl border-none">
-                                                {service.price_range || "Flexible"}
-                                            </Badge>
+                                    <CardFooter className="p-6 mt-5 border-t border-[#F0F4F1] flex items-center justify-between">
+                                        <div className="flex flex-col text-left">
+                                            <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Budget</span>
+                                            <span className="text-lg font-black text-primary">{service.price_range || "Flexible"}</span>
                                         </div>
-                                        <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl bg-zinc-50 group-hover:bg-primary group-hover:text-white transition-all">
-                                            <ArrowRight size={20} />
+                                        <Button size="icon" variant="ghost" className="h-9 w-9 rounded-xl bg-[#F0F4F1] group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                                            <ArrowRight size={16} />
                                         </Button>
                                     </CardFooter>
                                 </Card>

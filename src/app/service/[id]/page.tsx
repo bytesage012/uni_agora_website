@@ -15,6 +15,7 @@ import {
     Info,
     Pencil,
     Star,
+    Shield,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import Navbar from "../../components/Navbar";
@@ -58,6 +59,39 @@ interface Review {
         full_name: string;
         image_url?: string;
     };
+}
+
+function CategoryPlaceholder({ category }: { category: string }) {
+    const colors: Record<string, string> = {
+        "Graphic Design": "from-purple-600 to-indigo-950",
+        "Writing & Translation": "from-blue-600 to-cyan-950",
+        "Tutoring & Lessons": "from-amber-500 to-orange-950",
+        "Tech & Programming": "from-teal-600 to-emerald-950",
+        "Photography & Video": "from-pink-600 to-rose-950",
+        "Fashion & Style": "from-fuchsia-500 to-pink-950",
+        "Food & Groceries": "from-green-600 to-yellow-950",
+        "Beauty & Care": "from-rose-500 to-red-950",
+        "Repairs & Maintenance": "from-zinc-600 to-zinc-950",
+        "default": "from-emerald-700 to-emerald-950"
+    };
+
+    const gradient = colors[category] || colors["default"];
+
+    return (
+        <div className={`w-full h-full bg-gradient-to-br ${gradient} flex flex-col justify-between p-12 text-white relative overflow-hidden select-none min-h-[360px] rounded-[2.5rem]`}>
+            <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
+            <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-black/20 rounded-full blur-2xl"></div>
+            
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full w-fit">
+                UniAGORA Verified
+            </span>
+
+            <div className="space-y-2 z-10 text-left">
+                <p className="text-xs font-bold tracking-wider opacity-60 uppercase">Campus Marketplace Listing</p>
+                <p className="text-3xl md:text-5xl font-black tracking-tight leading-none uppercase">{category}</p>
+            </div>
+        </div>
+    );
 }
 
 export default function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -178,7 +212,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
 
     if (loading) {
         return (
-            <div className="min-h-screen flex flex-col bg-zinc-50">
+            <div className="min-h-screen flex flex-col bg-[#F8FAF7]">
                 <Navbar />
                 <main className="flex-grow flex items-center justify-center">
                     <Loader2 className="animate-spin text-primary" size={48} />
@@ -190,18 +224,18 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
 
     if (error || !service) {
         return (
-            <div className="min-h-screen flex flex-col bg-zinc-50">
+            <div className="min-h-screen flex flex-col bg-[#F8FAF7]">
                 <Navbar />
                 <main className="flex-grow flex items-center justify-center px-4">
-                    <Card className="max-w-md w-full p-12 rounded-[2.5rem] shadow-xl text-center border-none">
-                        <AlertCircle className="mx-auto text-red-500 mb-6" size={64} />
-                        <CardTitle className="text-2xl font-black text-primary mb-4">Listing Not Found</CardTitle>
-                        <CardDescription className="text-zinc-500 font-medium mb-8">
-                            {error || "The service you are looking for is no longer available."}
+                    <Card className="max-w-md w-full p-10 rounded-[3rem] shadow-xl text-center border-none bg-white">
+                        <AlertCircle className="mx-auto text-red-500 mb-6" size={56} />
+                        <CardTitle className="text-xl font-black text-primary mb-3">Listing Not Found</CardTitle>
+                        <CardDescription className="text-zinc-500 font-semibold mb-8">
+                            {error || "The service you are looking for is no longer available or was removed."}
                         </CardDescription>
-                        <Button asChild className="h-12 px-8 rounded-2xl shadow-lg">
+                        <Button asChild className="h-12 px-8 rounded-xl shadow-lg">
                             <Link href="/marketplace">
-                                <ArrowLeft size={20} className="mr-2" /> Back to Marketplace
+                                <ArrowLeft size={16} className="mr-2" /> Back to Marketplace
                             </Link>
                         </Button>
                     </Card>
@@ -216,101 +250,103 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
         : null;
 
     return (
-        <div className="min-h-screen flex flex-col bg-zinc-50 font-sans">
+        <div className="min-h-screen flex flex-col bg-[#F8FAF7] font-sans text-[#002217]">
             <Navbar />
 
-            <main className="flex-grow container mx-auto px-4 pt-12 pb-32 md:pb-20 max-w-5xl">
-                <Button variant="ghost" asChild className="mb-12 font-bold text-zinc-500 hover:text-primary gap-2">
+            <main className="flex-grow container mx-auto px-6 md:px-12 pt-10 pb-32 max-w-6xl">
+                <Button variant="ghost" asChild className="mb-10 font-bold text-zinc-500 hover:text-primary gap-2 hover:bg-[#F0F4F1] rounded-xl px-4 py-2">
                     <Link href="/marketplace">
-                        <ArrowLeft size={20} /> Back to Marketplace
+                        <ArrowLeft size={16} /> Back to Marketplace
                     </Link>
                 </Button>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                    {/* Main Info */}
-                    <div className="md:col-span-2 space-y-8">
-                        <Card className="rounded-[2.5rem] shadow-sm border-border-soft overflow-hidden">
-                            <CardHeader className="p-8 md:p-12">
-                                <div className="mb-6 flex items-center justify-between">
-                                    <Badge variant="secondary" className="bg-zinc-100 text-primary hover:bg-zinc-100 font-black text-[10px] uppercase tracking-widest px-4 py-1.5 rounded-xl border-none">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 text-left">
+                    {/* Main Content */}
+                    <div className="lg:col-span-8 space-y-8">
+                        <Card className="rounded-[2.5rem] border border-[#E2EAE4] shadow-sm overflow-hidden bg-white">
+                            <div className="p-6 md:p-10 space-y-8">
+                                <div className="flex items-center justify-between">
+                                    <Badge variant="secondary" className="bg-[#F0F4F1] text-primary hover:bg-[#F0F4F1] font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-lg border-none">
                                         {service.category}
                                     </Badge>
                                     {service.profiles?.verification_status === 'verified' && (
-                                        <Badge className="bg-green-500 text-white hover:bg-green-500 font-black text-[10px] uppercase tracking-widest px-4 py-1.5 rounded-xl border-none gap-1.5">
-                                            <CheckCircle2 size={12} /> Verified Seller
+                                        <Badge className="bg-green-500 text-white hover:bg-green-500 font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-lg border-none gap-1">
+                                            <CheckCircle2 size={10} /> Verified Seller
                                         </Badge>
                                     )}
                                 </div>
 
-                                {service.image_url && (
-                                    <div className="w-full aspect-video rounded-[2rem] overflow-hidden mb-8 shadow-inner border border-zinc-100 bg-zinc-50">
+                                {service.image_url ? (
+                                    <div className="w-full aspect-[16/9] rounded-[2rem] overflow-hidden shadow-inner border border-zinc-100 bg-[#F8FAF7]">
                                         <img src={service.image_url} alt={service.title} className="w-full h-full object-cover" />
                                     </div>
+                                ) : (
+                                    <CategoryPlaceholder category={service.category} />
                                 )}
 
-                                <CardTitle className="text-4xl font-black text-primary mb-6 leading-tight">
-                                    {service.title}
-                                </CardTitle>
+                                <div className="space-y-4">
+                                    <CardTitle className="text-3xl md:text-4xl font-black text-primary leading-tight">
+                                        {service.title}
+                                    </CardTitle>
 
-                                <div className="flex flex-wrap gap-4 mb-10">
-                                    <Badge variant="outline" className="h-10 px-4 rounded-xl border-zinc-200 text-primary font-bold gap-2 text-sm">
-                                        <DollarSign size={18} /> {service.price_range}
-                                    </Badge>
-                                    <Badge variant="outline" className="h-10 px-4 rounded-xl border-zinc-200 text-zinc-600 font-bold gap-2 text-sm">
-                                        <Tag size={18} /> {service.category}
-                                    </Badge>
-                                    {avgRating && (
-                                        <Badge className="h-10 px-4 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-50 border-amber-100 gap-2 text-sm">
-                                            <Star size={18} className="fill-amber-500 text-amber-500" />
-                                            {avgRating} <span className="text-amber-500/50 text-xs">({reviews.length})</span>
+                                    <div className="flex flex-wrap gap-3">
+                                        <Badge variant="outline" className="h-9 px-4 rounded-xl border-zinc-200 text-primary font-black gap-2 text-xs">
+                                            <DollarSign size={14} /> Budget: {service.price_range}
                                         </Badge>
-                                    )}
+                                        <Badge variant="outline" className="h-9 px-4 rounded-xl border-zinc-200 text-zinc-500 font-black gap-2 text-xs">
+                                            <Tag size={14} /> Category: {service.category}
+                                        </Badge>
+                                        {avgRating && (
+                                            <Badge className="h-9 px-4 rounded-xl bg-amber-50 text-amber-800 hover:bg-amber-50 border border-amber-100 gap-2 text-xs">
+                                                <Star size={14} className="fill-amber-500 text-amber-500" />
+                                                {avgRating} <span className="text-amber-500/50 text-[10px]">({reviews.length})</span>
+                                            </Badge>
+                                        )}
+                                    </div>
                                 </div>
 
-                                <Separator className="my-8" />
+                                <Separator className="bg-[#E2EAE4]" />
 
                                 <div className="space-y-4">
-                                    <h2 className="text-xl font-black text-primary flex items-center gap-2">
-                                        <Info size={20} /> Description
+                                    <h2 className="text-lg font-black text-primary flex items-center gap-2 uppercase tracking-wider text-[10px] text-zinc-400">
+                                        <Info size={16} className="text-primary" /> Listing Description
                                     </h2>
-                                    <p className="text-zinc-600 leading-relaxed font-medium whitespace-pre-wrap text-lg">
+                                    <p className="text-zinc-700 leading-relaxed font-semibold whitespace-pre-wrap text-base">
                                         {service.description}
                                     </p>
                                 </div>
-                            </CardHeader>
+                            </div>
                         </Card>
 
                         {/* Reviews Section */}
-                        <div className="pt-12">
-                            <div className="flex items-center justify-between mb-10">
-                                <h2 className="text-3xl font-black text-primary flex items-center gap-3">
-                                    <Star className="text-amber-500 fill-amber-500" size={32} />
-                                    Reviews
-                                    <span className="text-zinc-300 text-lg font-bold">({reviews.length})</span>
-                                </h2>
-                            </div>
+                        <div className="space-y-8 pt-8">
+                            <h2 className="text-2xl font-black text-primary flex items-center gap-2">
+                                <Star className="text-amber-500 fill-amber-500" size={24} />
+                                Reviews
+                                <span className="text-zinc-400 text-base font-bold">({reviews.length})</span>
+                            </h2>
 
                             {/* Review Form */}
-                            {currentUser && (
-                                <Card className="mb-12 bg-zinc-50 rounded-[2.5rem] p-8 border border-zinc-200 shadow-sm relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                            {currentUser && currentUser.id !== service.user_id && (
+                                <Card className="bg-white rounded-[2rem] p-6 border border-[#E2EAE4] shadow-sm relative overflow-hidden">
                                     <div className="flex items-center gap-4 mb-6">
-                                        <Avatar className="h-12 w-12 rounded-2xl shadow-sm border border-white">
-                                            <AvatarFallback className="bg-primary/10 text-primary font-black">
+                                        <Avatar className="h-10 w-10 rounded-xl shadow-sm border border-zinc-100">
+                                            <AvatarFallback className="bg-primary/5 text-primary font-black">
                                                 {currentUser.email?.charAt(0).toUpperCase()}
                                             </AvatarFallback>
                                         </Avatar>
-                                        <div>
-                                            <p className="font-black text-primary">Leave a Review</p>
-                                            <div className="flex gap-1 mt-1">
+                                        <div className="text-left">
+                                            <p className="font-black text-primary text-sm">Leave Feedback</p>
+                                            <div className="flex gap-0.5 mt-1">
                                                 {[1, 2, 3, 4, 5].map((star) => (
                                                     <button
                                                         key={star}
+                                                        type="button"
                                                         onClick={() => setNewRating(star)}
                                                         className="transition-transform active:scale-90"
                                                     >
                                                         <Star
-                                                            size={20}
+                                                            size={16}
                                                             className={star <= newRating ? "text-amber-500 fill-amber-500" : "text-zinc-300"}
                                                         />
                                                     </button>
@@ -318,92 +354,106 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                                             </div>
                                         </div>
                                     </div>
-                                    <form onSubmit={handleReviewSubmit} className="space-y-4 relative z-10">
+                                    <form onSubmit={handleReviewSubmit} className="space-y-4">
                                         <Textarea
-                                            className="w-full p-6 bg-white border-zinc-100 rounded-[1.5rem] focus:ring-primary/20 min-h-[120px] font-medium"
-                                            placeholder="Share your experience with this freelancer..."
+                                            className="w-full p-4 bg-[#F8FAF7] border-zinc-200/80 rounded-xl focus:ring-primary/20 min-h-[100px] font-semibold text-sm"
+                                            placeholder="Write an honest comment about your transactions with this student..."
                                             value={newComment}
                                             onChange={(e) => setNewComment(e.target.value)}
                                         />
                                         <Button
                                             disabled={submittingReview}
-                                            className="h-12 px-8 rounded-xl shadow-lg shadow-primary/20 font-black"
+                                            className="h-11 px-6 rounded-xl shadow-md font-black text-xs uppercase tracking-wider"
                                         >
-                                            {submittingReview ? <Loader2 className="animate-spin mr-2" /> : null}
-                                            Post Review
+                                            {submittingReview ? <Loader2 className="animate-spin mr-2" size={14} /> : null}
+                                            Submit Review
                                         </Button>
                                     </form>
                                 </Card>
                             )}
 
                             {/* Reviews List */}
-                            <ScrollArea className="space-y-8">
+                            <ScrollArea className="space-y-6">
                                 {reviews.length === 0 ? (
-                                    <div className="text-center py-12 bg-zinc-50 rounded-[2rem] border-2 border-dashed border-zinc-100">
-                                        <p className="text-zinc-400 font-bold uppercase tracking-widest">No reviews yet. Be the first!</p>
+                                    <div className="text-center py-12 bg-white rounded-[2rem] border border-zinc-200/50">
+                                        <p className="text-zinc-400 font-bold uppercase tracking-widest text-xs">No reviews posted yet.</p>
                                     </div>
                                 ) : (
-                                    reviews.map((review) => (
-                                        <div key={review.id} className="flex gap-6 pb-8 border-b border-zinc-50 last:border-0 items-start">
-                                            <Avatar className="h-14 w-14 rounded-2xl border bg-zinc-100">
-                                                <AvatarImage src={review.profiles.image_url} />
-                                                <AvatarFallback className="bg-primary/5 text-primary font-black text-xl">
-                                                    {review.profiles.full_name?.charAt(0)}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex-grow space-y-2">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        <h4 className="font-black text-primary">{review.profiles.full_name}</h4>
-                                                        <div className="flex gap-0.5">
-                                                            {[1, 2, 3, 4, 5].map((s) => (
-                                                                <Star key={s} size={12} className={s <= review.rating ? "text-amber-500 fill-amber-500" : "text-zinc-200"} />
-                                                            ))}
+                                    <div className="space-y-6">
+                                        {reviews.map((review) => (
+                                            <div key={review.id} className="flex gap-4 pb-6 border-b border-[#F0F4F1] last:border-0 items-start text-left bg-white p-6 rounded-[2rem] border border-[#E2EAE4]/60 shadow-sm">
+                                                <Avatar className="h-10 w-10 rounded-xl border border-zinc-100 bg-[#F8FAF7]">
+                                                    <AvatarImage src={review.profiles.image_url} />
+                                                    <AvatarFallback className="bg-primary/5 text-primary font-black text-sm">
+                                                        {review.profiles.full_name?.charAt(0) || "U"}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div className="flex-grow space-y-1">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            <h4 className="font-black text-primary text-sm">{review.profiles.full_name}</h4>
+                                                            <div className="flex gap-0.5">
+                                                                {[1, 2, 3, 4, 5].map((s) => (
+                                                                    <Star key={s} size={10} className={s <= review.rating ? "text-amber-500 fill-amber-500" : "text-zinc-200"} />
+                                                                ))}
+                                                            </div>
                                                         </div>
+                                                        <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">
+                                                            {new Date(review.created_at).toLocaleDateString()}
+                                                        </span>
                                                     </div>
-                                                    <span className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">
-                                                        {new Date(review.created_at).toLocaleDateString()}
-                                                    </span>
+                                                    <p className="text-zinc-600 font-semibold text-sm leading-relaxed">
+                                                        {review.comment}
+                                                    </p>
                                                 </div>
-                                                <p className="text-zinc-600 font-medium leading-relaxed">
-                                                    {review.comment}
-                                                </p>
                                             </div>
-                                        </div>
-                                    ))
+                                        ))}
+                                    </div>
                                 )}
                             </ScrollArea>
                         </div>
                     </div>
 
-                    {/* Sidebar: Freelancer Info & Conversion */}
-                    <div className="space-y-6">
-                        <Card className="rounded-[2rem] shadow-sm border-border-soft overflow-hidden sticky top-24 border-t-8 border-primary">
-                            <CardContent className="p-8">
-                                <div className="flex flex-col items-center text-center mb-8">
-                                    <div className="relative mb-4">
-                                        <Avatar className="w-24 h-24 rounded-[2rem] border-4 border-white shadow-xl">
-                                            <AvatarImage src={service.profiles.image_url} />
-                                            <AvatarFallback className="bg-primary/5 text-primary text-3xl font-black">
-                                                {service.profiles.full_name.charAt(0)}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        {service.profiles.verification_status === "verified" && (
-                                            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-xl shadow-md flex items-center justify-center border border-zinc-50">
-                                                <CheckCircle2 size={18} className="text-green-500" />
-                                            </div>
-                                        )}
-                                    </div>
+                    {/* Sidebar */}
+                    <div className="lg:col-span-4 space-y-6">
+                        <Card className="rounded-[2.5rem] border border-[#E2EAE4] shadow-sm overflow-hidden sticky top-28 bg-white">
+                            <CardContent className="p-6 flex flex-col items-center text-center">
+                                <div className="relative mb-4 mt-2">
+                                    <Avatar className="w-20 h-20 rounded-[1.5rem] border-4 border-[#F0F4F1] shadow-md">
+                                        <AvatarImage src={service.profiles.image_url} />
+                                        <AvatarFallback className="bg-primary/5 text-primary text-2xl font-black">
+                                            {service.profiles.full_name.charAt(0)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    {service.profiles.verification_status === "verified" && (
+                                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-lg shadow-sm flex items-center justify-center border border-zinc-100">
+                                            <CheckCircle2 size={14} className="text-green-500" />
+                                        </div>
+                                    )}
+                                </div>
 
-                                    <h3 className="text-2xl font-black text-primary leading-tight">{service.profiles.full_name}</h3>
-                                    <div className="flex items-center justify-center gap-2 mt-2">
-                                        <Badge variant="secondary" className={`text-[10px] font-black uppercase tracking-widest rounded-md ${service.profiles.verification_status === "verified" ? "bg-green-50 text-green-700" : "bg-zinc-100 text-zinc-400"}`}>
-                                            {service.profiles.verification_status === "verified" ? "Verified Freelancer" : "Member"}
-                                        </Badge>
+                                <h3 className="text-xl font-black text-primary leading-tight">{service.profiles.full_name}</h3>
+                                <Badge variant="secondary" className={`text-[8px] font-black uppercase tracking-widest rounded-md mt-2 px-2.5 py-0.5 ${service.profiles.verification_status === "verified" ? "bg-green-50 text-green-700" : "bg-[#F0F4F1] text-zinc-400"}`}>
+                                    {service.profiles.verification_status === "verified" ? "Verified Student" : "Classmate"}
+                                </Badge>
+                                
+                                <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-2 bg-[#F8FAF7] border border-zinc-200/50 px-3 py-1 rounded-full">
+                                    {service.profiles.university}
+                                </p>
+
+                                <Separator className="my-6 bg-[#F0F4F1]" />
+
+                                <div className="w-full text-left space-y-4 mb-6">
+                                    <div className="flex justify-between items-center text-sm font-semibold">
+                                        <span className="text-zinc-400 font-bold uppercase tracking-wider text-[9px]">Budget</span>
+                                        <span className="font-black text-primary text-base">{service.price_range}</span>
                                     </div>
-                                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-2">
-                                        {service.profiles.university}
-                                    </p>
+                                    <div className="flex justify-between items-center text-sm font-semibold">
+                                        <span className="text-zinc-400 font-bold uppercase tracking-wider text-[9px]">Campus Security</span>
+                                        <span className="text-green-600 font-black flex items-center gap-1 text-xs">
+                                            <Shield size={12} /> Insured Deal
+                                        </span>
+                                    </div>
                                 </div>
 
                                 {currentUser?.id !== service.user_id && (
@@ -427,43 +477,43 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                                                 toast.error("Could not start a conversation.");
                                             }
                                         }}
-                                        className="w-full h-14 bg-primary text-white font-black text-lg rounded-2xl shadow-xl shadow-primary/20 gap-2 mb-4"
+                                        className="w-full h-12 bg-primary text-white font-black text-sm uppercase tracking-wider rounded-xl shadow-lg shadow-primary/10 gap-2 mb-4"
                                     >
-                                        <MessageCircle size={24} />
-                                        Message Freelancer
+                                        <MessageCircle size={18} />
+                                        Message Merchant
                                     </Button>
                                 )}
 
                                 {currentUser?.id === service.user_id && (
-                                    <Button asChild className="w-full h-14 bg-zinc-900 text-white font-black text-lg rounded-2xl shadow-xl hover:bg-black gap-2 mb-4">
+                                    <Button asChild className="w-full h-12 bg-zinc-900 text-white font-black text-sm uppercase tracking-wider rounded-xl shadow-lg hover:bg-black gap-2 mb-4">
                                         <Link href={`/edit-service/${service.id}`}>
-                                            <Pencil size={20} /> Edit Listing
+                                            <Pencil size={16} /> Edit Listing
                                         </Link>
                                     </Button>
                                 )}
 
-                                <Alert className="bg-amber-50 border-amber-200 text-amber-900 rounded-2xl">
-                                    <ShieldCheck className="h-5 w-5 text-amber-600" />
-                                    <AlertTitle className="text-xs font-black uppercase tracking-wider mb-1">Safety First</AlertTitle>
-                                    <AlertDescription className="text-[10px] font-bold leading-relaxed">
-                                        Meet in public campus areas. Pay only after service delivery.
+                                <Alert className="bg-amber-50/60 border-amber-100 text-amber-900 rounded-[1.5rem] text-left p-4">
+                                    <ShieldCheck className="h-4 w-4 text-amber-600" />
+                                    <AlertTitle className="text-[10px] font-black uppercase tracking-wider mb-1">Campus Safety Guidelines</AlertTitle>
+                                    <AlertDescription className="text-[10px] font-semibold leading-normal text-amber-800">
+                                        Meet only in public, well-lit campus zones (e.g., student unions or libraries). Deliver and inspect before paying.
                                     </AlertDescription>
                                 </Alert>
                             </CardContent>
 
-                            <CardFooter className="bg-zinc-50 border-t p-6 flex flex-col items-center">
-                                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest flex items-center gap-2">
-                                    <ShieldCheck size={14} className="text-primary" /> Verified Student Listing
+                            <CardFooter className="bg-[#F8FAF7] border-t border-[#F0F4F1] p-4 flex justify-center">
+                                <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                                    <Shield size={12} className="text-primary" /> Verified Student Merchant Listing
                                 </p>
                             </CardFooter>
                         </Card>
                     </div>
                 </div>
-            </main >
+            </main>
 
-            {/* Mobile Contact Button */}
+            {/* Mobile Bottom Contact Button */}
             {currentUser?.id !== service.user_id && (
-                <div className="md:hidden fixed bottom-8 left-4 right-4 z-50">
+                <div className="md:hidden fixed bottom-6 left-6 right-6 z-50">
                     <Button
                         onClick={async () => {
                             if (!currentUser) return router.push("/login");
@@ -478,14 +528,14 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                                 toast.error("Could not contact merchant.");
                             }
                         }}
-                        className="w-full h-16 bg-primary text-white font-black text-xl rounded-[2rem] shadow-2xl border-4 border-white gap-3"
+                        className="w-full h-14 bg-primary text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-xl border-4 border-white gap-2"
                     >
-                        <MessageCircle size={28} /> Message Merchant
+                        <MessageCircle size={20} /> Message Merchant
                     </Button>
                 </div>
             )}
 
             <Footer />
-        </div >
+        </div>
     );
 }
