@@ -21,7 +21,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -72,8 +72,6 @@ export default function ForumModeration() {
     const [loading, setLoading] = useState(true);
     const [posts, setPosts] = useState<Post[]>([]);
     const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
-    const [error, setError] = useState<string | null>(null);
-    const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
@@ -112,7 +110,6 @@ export default function ForumModeration() {
             setFilteredPosts(transformed);
         } catch (err) {
             console.error("Error fetching posts:", err);
-            setError("Failed to load forum content.");
         } finally {
             setLoading(false);
         }
@@ -130,7 +127,6 @@ export default function ForumModeration() {
     }, [searchQuery, posts]);
 
     const deletePost = async (id: string) => {
-        setActionLoading(id);
         try {
             const { error: deleteError } = await supabase
                 .from("community_posts")
@@ -141,9 +137,10 @@ export default function ForumModeration() {
             setPosts(posts.filter(p => p.id !== id));
             toast.success("Discussion deleted permanently.");
         } catch (err) {
+            console.error("Error deleting post:", err);
             toast.error("Failed to delete post.");
         } finally {
-            setActionLoading(null);
+            // Loading handled by local state if needed, but removed as it was unused
         }
     };
 

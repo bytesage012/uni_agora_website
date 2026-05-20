@@ -17,7 +17,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import SkeletonCard from "../components/SkeletonCard";
 
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";

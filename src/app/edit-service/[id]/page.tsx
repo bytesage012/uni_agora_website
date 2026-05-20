@@ -23,7 +23,6 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { toast } from "sonner";
 
-import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {

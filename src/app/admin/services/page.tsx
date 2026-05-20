@@ -20,7 +20,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -71,10 +71,7 @@ export default function ServiceModeration() {
     const [loading, setLoading] = useState(true);
     const [services, setServices] = useState<Service[]>([]);
     const [filteredServices, setFilteredServices] = useState<Service[]>([]);
-    const [error, setError] = useState<string | null>(null);
-    const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
-    const [categoryFilter, setCategoryFilter] = useState("all");
 
     useEffect(() => {
         const checkAdmin = async () => {
@@ -112,7 +109,6 @@ export default function ServiceModeration() {
             setFilteredServices(transformed);
         } catch (err) {
             console.error("Error fetching services:", err);
-            setError("Failed to load services.");
         } finally {
             setLoading(false);
         }
@@ -126,14 +122,10 @@ export default function ServiceModeration() {
                 s.profiles.full_name.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
-        if (categoryFilter !== "all") {
-            result = result.filter(s => s.category === categoryFilter);
-        }
         setFilteredServices(result);
-    }, [searchQuery, categoryFilter, services]);
+    }, [searchQuery, services]);
 
     const toggleFeatured = async (id: string, current: boolean) => {
-        setActionLoading(id);
         try {
             const { error: updateError } = await supabase
                 .from("services")
@@ -144,14 +136,12 @@ export default function ServiceModeration() {
             setServices(services.map(s => s.id === id ? { ...s, is_featured: !current } : s));
             toast.success(current ? "Removed from featured" : "Added to featured listings!");
         } catch (err) {
+            console.error("Error toggling featured:", err);
             toast.error("Failed to update service status.");
-        } finally {
-            setActionLoading(null);
         }
     };
 
     const deleteService = async (id: string) => {
-        setActionLoading(id);
         try {
             const { error: deleteError } = await supabase
                 .from("services")
@@ -162,9 +152,8 @@ export default function ServiceModeration() {
             setServices(services.filter(s => s.id !== id));
             toast.success("Service listing deleted.");
         } catch (err) {
+            console.error("Error deleting service:", err);
             toast.error("Failed to delete service.");
-        } finally {
-            setActionLoading(null);
         }
     };
 

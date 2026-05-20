@@ -73,7 +73,7 @@ export default function NotificationsPage() {
             if (error) throw error;
             setNotifications(prev => prev.filter(n => n.id !== id));
             toast.success("Notification removed.");
-        } catch (err: unknown) {
+        } catch {
             toast.error("Failed to delete notification.");
         }
     };

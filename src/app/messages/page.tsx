@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import {
     MessageSquare,
     MessageCircle,
-    Loader2,
     AlertCircle,
     ArrowRight,
 } from "lucide-react";
@@ -15,7 +14,7 @@ import Footer from "../components/Footer";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 

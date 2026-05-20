@@ -4,21 +4,18 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Link from "next/link";
 import {
-    Users,
     ShieldAlert,
     MessageCircle,
-    CheckCircle2,
     AlertTriangle,
     ArrowRight,
     Star,
-    Handshake,
-    Shield
+    Handshake
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 
 export default function CommunityGuidelines() {

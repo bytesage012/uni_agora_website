@@ -9,7 +9,6 @@ import {
     ShoppingBag,
     Plus,
     ExternalLink,
-    Loader2,
     Briefcase,
     MessageSquare,
     Users,
@@ -30,7 +29,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
     const router = useRouter();
-    const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<unknown>(null);
     const [stats, setStats] = useState({ serviceCount: 0 });
     const [recentConversations, setRecentConversations] = useState<unknown[]>([]);
@@ -111,8 +109,6 @@ export default function DashboardPage() {
                 .limit(2);
 
             setRecentPosts(posts || []);
-
-            setLoading(false);
         };
         fetchProfileAndStats();
     }, [router]);

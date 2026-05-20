@@ -69,7 +69,6 @@ export default function AdminUsersPage() {
     const [users, setUsers] = useState<UserProfile[]>([]);
     const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
     const [error, setError] = useState<string | null>(null);
-    const [_actionLoading, setActionLoading] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
 
@@ -133,7 +132,6 @@ export default function AdminUsersPage() {
 
     const toggleVerification = async (userId: string, currentStatus: string) => {
         const newStatus = currentStatus === "verified" ? "unverified" : "verified";
-        setActionLoading(userId);
 
         try {
             const { error: updateError } = await supabase
@@ -158,8 +156,6 @@ export default function AdminUsersPage() {
         } catch (err) {
             console.error("Error toggling verification:", err);
             toast.error("Failed to update status.");
-        } finally {
-            setActionLoading(null);
         }
     };
 
