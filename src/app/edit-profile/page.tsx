@@ -125,9 +125,9 @@ export default function EditProfilePage() {
             setTimeout(() => {
                 router.push("/dashboard");
             }, 2000);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Error updating profile:", err);
-            const msg = err.message || "Failed to update profile.";
+            const msg = err instanceof Error ? err.message : "Failed to update profile.";
             setError(msg);
             toast.error(msg);
         } finally {

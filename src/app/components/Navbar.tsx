@@ -14,7 +14,6 @@ import {
     Search,
     Users,
     Bell,
-    ExternalLink
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
@@ -46,17 +45,27 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface Notification {
+    id: string;
+    title: string;
+    content: string;
+    created_at: string;
+    is_read: boolean;
+    link?: string;
+    type?: string;
+}
 
 export default function Navbar() {
     const router = useRouter();
     const pathname = usePathname();
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
-    const [notifications, setNotifications] = useState<any[]>([]);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
 
-    // Active Link Helper
-    const isActive = (path: string) => pathname === path;
+
 
     useEffect(() => {
         const checkUser = async () => {
@@ -97,7 +106,7 @@ export default function Navbar() {
                             filter: `user_id=eq.${session.user.id}`
                         },
                         (payload) => {
-                            setNotifications(prev => [payload.new, ...prev].slice(0, 5));
+                            setNotifications(prev => [payload.new as Notification, ...prev].slice(0, 5));
                             setUnreadCount(c => c + 1);
                         }
                     )
@@ -108,6 +117,7 @@ export default function Navbar() {
             return null;
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let notificationChannel: any = null;
         initNotifications().then(channel => {
             notificationChannel = channel;
@@ -158,7 +168,7 @@ export default function Navbar() {
         }
     };
 
-    const handleNotificationClick = async (notif: any) => {
+    const handleNotificationClick = async (notif: Notification) => {
         if (!notif.is_read) {
             await markAsRead(notif.id);
         }
@@ -173,6 +183,7 @@ export default function Navbar() {
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-3 group">
                     <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center overflow-hidden shadow-sm border group-hover:scale-110 transition-transform">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
                     </div>
                     <span className="text-2xl font-black text-primary tracking-tighter italic">UniAGORA</span>

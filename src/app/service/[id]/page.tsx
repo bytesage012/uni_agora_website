@@ -23,7 +23,7 @@ import Footer from "../../components/Footer";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -102,7 +102,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
     const [loading, setLoading] = useState(true);
     const [submittingReview, setSubmittingReview] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [currentUser, setCurrentUser] = useState<unknown>(null);
 
     const [newRating, setNewRating] = useState(5);
     const [newComment, setNewComment] = useState("");
@@ -278,6 +278,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
 
                                 {service.image_url ? (
                                     <div className="w-full aspect-[16/9] rounded-[2rem] overflow-hidden shadow-inner border border-zinc-100 bg-[#F8FAF7]">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img src={service.image_url} alt={service.title} className="w-full h-full object-cover" />
                                     </div>
                                 ) : (

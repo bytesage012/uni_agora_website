@@ -21,19 +21,20 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+
 
 export default function DashboardPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
-    const [profile, setProfile] = useState<any>(null);
+    const [profile, setProfile] = useState<unknown>(null);
     const [stats, setStats] = useState({ serviceCount: 0 });
-    const [recentConversations, setRecentConversations] = useState<any[]>([]);
-    const [recentPosts, setRecentPosts] = useState<any[]>([]);
+    const [recentConversations, setRecentConversations] = useState<unknown[]>([]);
+    const [recentPosts, setRecentPosts] = useState<unknown[]>([]);
 
     useEffect(() => {
         const fetchProfileAndStats = async () => {
@@ -88,7 +89,7 @@ export default function DashboardPage() {
 
                 const enriched = (convos || []).map(c => {
                     const other = others?.find(o => o.conversation_id === c.id);
-                    const profileRec = other?.profiles as any;
+                    const profileRec = other?.profiles as Record<string, unknown> | Array<Record<string, unknown>>;
                     const name = Array.isArray(profileRec)
                         ? profileRec[0]?.full_name
                         : profileRec?.full_name;
@@ -116,17 +117,25 @@ export default function DashboardPage() {
         fetchProfileAndStats();
     }, [router]);
 
-    if (loading) {
         return (
-            <div className="min-h-screen flex flex-col bg-zinc-50">
+            <div className="min-h-screen flex flex-col bg-zinc-50 font-sans">
                 <Navbar />
-                <main className="flex-grow flex items-center justify-center">
-                    <Loader2 className="animate-spin text-primary" size={48} />
+                <main className="flex-grow max-w-6xl mx-auto w-full px-4 py-12 space-y-12">
+                    <div className="flex items-center gap-6 animate-pulse">
+                        <Skeleton className="w-20 h-20 rounded-3xl" />
+                        <div className="space-y-3">
+                            <Skeleton className="h-8 w-48" />
+                            <Skeleton className="h-4 w-32" />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <Skeleton className="h-64 rounded-[2rem]" />
+                        <Skeleton className="h-64 rounded-[2rem]" />
+                    </div>
                 </main>
                 <Footer />
             </div>
         );
-    }
 
     return (
         <div className="min-h-screen flex flex-col bg-zinc-50 font-sans">
@@ -305,10 +314,13 @@ export default function DashboardPage() {
 
                         <div className="space-y-4">
                             {recentPosts.length === 0 ? (
-                                <Card className="p-8 rounded-[2rem] bg-zinc-50 border-none">
-                                    <p className="text-sm text-zinc-500 font-medium mb-4">No recent community activity.</p>
-                                    <Button asChild variant="ghost" className="p-0 h-auto font-black text-primary text-xs uppercase tracking-widest gap-1 hover:bg-transparent">
-                                        <Link href="/community/create">Start a Discussion <ArrowUpRight size={14} /></Link>
+                                <Card className="p-12 rounded-[2.5rem] bg-zinc-50/50 border-dashed border-2 border-zinc-200 flex flex-col items-center justify-center text-center group transition-colors hover:bg-zinc-50 hover:border-primary/20">
+                                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm text-zinc-300 mb-6 group-hover:text-primary transition-colors group-hover:scale-110 duration-500">
+                                        <Users size={32} />
+                                    </div>
+                                    <p className="text-zinc-500 font-medium mb-6">Your community feed is quiet. Start a conversation or ask a question!</p>
+                                    <Button asChild className="h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest gap-2 bg-primary hover:bg-primary-hover text-white shadow-premium">
+                                        <Link href="/community/create">Start Discussion <ArrowUpRight size={16} /></Link>
                                     </Button>
                                 </Card>
                             ) : (

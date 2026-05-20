@@ -18,7 +18,6 @@ import {
   Star,
   ShieldCheck,
   LayoutDashboard,
-  CheckCircle2,
   Trophy,
   Zap,
   Sparkles
@@ -27,7 +26,7 @@ import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Accordion,
@@ -35,7 +34,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);

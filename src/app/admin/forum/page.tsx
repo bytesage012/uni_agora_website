@@ -7,7 +7,6 @@ import {
     Search,
     Trash2,
     Loader2,
-    ExternalLink,
     ArrowLeft,
     ShieldAlert,
     MoreHorizontal,
@@ -22,7 +21,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {

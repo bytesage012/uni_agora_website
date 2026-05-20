@@ -60,7 +60,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     const [commenting, setCommenting] = useState(false);
     const [newComment, setNewComment] = useState("");
     const [error, setError] = useState<string | null>(null);
-    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [currentUser, setCurrentUser] = useState<unknown>(null);
 
     useEffect(() => {
         const fetchData = async () => {

@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
     DropdownMenu,
@@ -170,7 +171,13 @@ export default function MyServicesPage() {
                                 <CardHeader className="p-6 pb-0">
                                     <div className="relative aspect-video rounded-3xl overflow-hidden border border-zinc-50 bg-zinc-100">
                                         {service.image_url ? (
-                                            <img src={service.image_url} alt={service.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                            <Image 
+                                                src={service.image_url} 
+                                                alt={service.title} 
+                                                fill
+                                                className="object-cover group-hover:scale-105 transition-transform duration-500" 
+                                                sizes="(max-width: 768px) 100vw, 50vw"
+                                            />
                                         ) : (
                                             <div className="flex items-center justify-center h-full text-zinc-200">
                                                 <ShoppingBag size={48} />

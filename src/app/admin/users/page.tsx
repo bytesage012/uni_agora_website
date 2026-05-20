@@ -3,15 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-    ShieldCheck,
     Users,
-    CheckCircle2,
-    ExternalLink,
     Search,
     Loader2,
     AlertCircle,
     ArrowLeft,
-    Filter,
+    Clock,
     MoreHorizontal,
     Ban,
     UserCheck,
@@ -24,7 +21,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
     Select,
@@ -51,7 +48,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+
 
 interface UserProfile {
     id: string;
@@ -72,7 +69,7 @@ export default function AdminUsersPage() {
     const [users, setUsers] = useState<UserProfile[]>([]);
     const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
     const [error, setError] = useState<string | null>(null);
-    const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const [_actionLoading, setActionLoading] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
 
@@ -108,7 +105,7 @@ export default function AdminUsersPage() {
             if (fetchError) throw fetchError;
             setUsers(data || []);
             setFilteredUsers(data || []);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Error fetching users:", err);
             setError("Failed to load users list.");
         } finally {
@@ -338,7 +335,7 @@ export default function AdminUsersPage() {
                         <div className="py-24 text-center space-y-4 bg-zinc-50/50">
                             <Users className="mx-auto text-zinc-200" size={64} />
                             <h3 className="text-2xl font-black text-primary">No users found</h3>
-                            <p className="text-zinc-400 font-medium max-w-xs mx-auto">Try adjusting your filters or search query to find who you're looking for.</p>
+                            <p className="text-zinc-400 font-medium max-w-xs mx-auto">Try adjusting your filters or search query to find who you&apos;re looking for.</p>
                         </div>
                     )}
                 </Card>

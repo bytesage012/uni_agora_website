@@ -10,8 +10,7 @@ import {
     Trash2,
     Loader2,
     ArrowLeft,
-    Clock,
-    X
+    Clock
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import Navbar from "../components/Navbar";
@@ -20,16 +19,14 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 
 export default function NotificationsPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
-    const [notifications, setNotifications] = useState<any[]>([]);
-    const [user, setUser] = useState<any>(null);
+    const [notifications, setNotifications] = useState<unknown[]>([]);
 
     useEffect(() => {
         const fetchAllNotifications = async () => {
@@ -38,7 +35,7 @@ export default function NotificationsPage() {
                 router.push("/login");
                 return;
             }
-            setUser(session.user);
+
 
             const { data, error } = await supabase
                 .from("notifications")
@@ -76,12 +73,12 @@ export default function NotificationsPage() {
             if (error) throw error;
             setNotifications(prev => prev.filter(n => n.id !== id));
             toast.success("Notification removed.");
-        } catch (err) {
+        } catch (err: unknown) {
             toast.error("Failed to delete notification.");
         }
     };
 
-    const handleNotificationClick = async (notif: any) => {
+    const handleNotificationClick = async (notif: { is_read: boolean; id: string; link?: string }) => {
         if (!notif.is_read) {
             await markAsRead(notif.id);
         }

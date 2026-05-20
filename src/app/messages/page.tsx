@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
     MessageSquare,
+    MessageCircle,
     Loader2,
     AlertCircle,
     ArrowRight,
@@ -14,12 +15,13 @@ import Footer from "../components/Footer";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Conversation {
     id: string;
@@ -38,7 +40,7 @@ export default function InboxPage() {
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [currentUser, setCurrentUser] = useState<any>(null);
+
 
     useEffect(() => {
         const fetchInbox = async () => {
@@ -49,7 +51,7 @@ export default function InboxPage() {
                     router.push("/login");
                     return;
                 }
-                setCurrentUser(session.user);
+
 
                 const { data: participants, error: partError } = await supabase
                     .from("conversation_participants")
@@ -110,6 +112,34 @@ export default function InboxPage() {
         fetchInbox();
     }, [router]);
 
+    if (loading) {
+        return (
+            <div className="min-h-screen flex flex-col bg-zinc-50 font-sans">
+                <Navbar />
+                <main className="flex-grow max-w-4xl mx-auto w-full px-4 py-12">
+                    <div className="space-y-6">
+                        <Skeleton className="h-12 w-48 rounded-2xl mb-8" />
+                        <Card className="rounded-[2.5rem] border-none shadow-sm bg-white p-8 space-y-8">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="flex items-center gap-6 animate-pulse">
+                                    <Skeleton className="h-16 w-16 rounded-2xl" />
+                                    <div className="flex-grow space-y-3">
+                                        <div className="flex justify-between">
+                                            <Skeleton className="h-6 w-32" />
+                                            <Skeleton className="h-4 w-16" />
+                                        </div>
+                                        <Skeleton className="h-4 w-64" />
+                                    </div>
+                                </div>
+                            ))}
+                        </Card>
+                    </div>
+                </main>
+                <Footer />
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-zinc-50 flex flex-col font-sans">
             <Navbar />
@@ -124,26 +154,21 @@ export default function InboxPage() {
                     <p className="text-zinc-500 font-medium text-lg">Real-time chats with campus freelancers</p>
                 </header>
 
-                {loading ? (
-                    <div className="py-20 flex flex-col items-center justify-center gap-6">
-                        <Loader2 className="animate-spin text-primary" size={48} />
-                        <p className="text-zinc-400 font-black uppercase tracking-widest text-[10px]">Loading Inbox...</p>
-                    </div>
-                ) : error ? (
+                {error ? (
                     <Alert variant="destructive" className="rounded-[2rem] p-8 border-none bg-red-50 text-red-700">
                         <AlertCircle className="h-8 w-8 text-red-500" />
                         <AlertDescription className="font-bold text-lg ml-2">{error}</AlertDescription>
                     </Alert>
                 ) : conversations.length === 0 ? (
-                    <Card className="rounded-[3rem] p-16 border-dashed border-2 border-zinc-200 bg-white/50 text-center flex flex-col items-center">
-                        <div className="w-24 h-24 bg-white rounded-[2rem] shadow-xl flex items-center justify-center mb-8 text-zinc-200">
-                            <MessageSquare size={48} />
+                    <Card className="py-32 px-6 rounded-[3rem] border-none shadow-sm flex flex-col items-center text-center bg-white">
+                        <div className="w-24 h-24 bg-zinc-50 rounded-3xl flex items-center justify-center text-zinc-300 mb-8 shadow-inner">
+                            <MessageCircle size={48} />
                         </div>
-                        <CardTitle className="text-3xl font-black text-primary mb-2">No messages yet</CardTitle>
-                        <CardDescription className="text-zinc-500 mb-10 max-w-sm text-lg font-medium leading-relaxed">
-                            When you contact a freelancer or someone messages you, it will appear here.
-                        </CardDescription>
-                        <Button asChild className="h-14 px-10 bg-primary text-white font-black rounded-2xl shadow-2xl shadow-primary/30">
+                        <h3 className="text-3xl font-black text-primary tracking-tight mb-4">No conversations yet</h3>
+                        <p className="text-zinc-500 font-medium mb-8 max-w-sm">
+                            Connect with freelancers or clients on the marketplace to start chatting.
+                        </p>
+                        <Button asChild className="h-14 px-8 rounded-2xl font-bold bg-primary hover:bg-primary-hover text-white">
                             <Link href="/marketplace">Browse Marketplace</Link>
                         </Button>
                     </Card>

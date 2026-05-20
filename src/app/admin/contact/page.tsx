@@ -10,7 +10,6 @@ import {
     Loader2,
     ArrowLeft,
     Trash2,
-    CheckCircle2,
     Reply,
     User,
     MessageSquare
@@ -22,7 +21,7 @@ import Navbar from "../../components/Navbar";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -78,7 +77,7 @@ export default function AdminContactPage() {
 
             if (fetchError) throw fetchError;
             setSubmissions(data || []);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Error fetching submissions:", err);
             setError("Failed to load submissions.");
         } finally {

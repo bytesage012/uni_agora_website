@@ -17,7 +17,8 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import SkeletonCard from "../components/SkeletonCard";
 
-import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -292,7 +293,13 @@ function MarketplaceContent() {
                                     <CardHeader className="p-5 pb-0">
                                         <div className="relative aspect-[16/10] rounded-[2rem] overflow-hidden bg-[#F8FAF7] border border-[#E2EAE4] shadow-inner">
                                             {service.image_url ? (
-                                                <img src={service.image_url} alt={service.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                                <Image 
+                                                    src={service.image_url} 
+                                                    alt={service.title} 
+                                                    fill
+                                                    className="object-cover group-hover:scale-105 transition-transform duration-700" 
+                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                />
                                             ) : (
                                                 <CategoryPlaceholder category={service.category} />
                                             )}

@@ -19,7 +19,6 @@ import Footer from "../components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
 
 export default function VerifyPage() {
     const router = useRouter();
@@ -119,9 +118,9 @@ export default function VerifyPage() {
                 router.push("/profile");
             }, 3000);
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Error in verification upload:", err);
-            setError(err.message || "Failed to submit for verification. Please try again.");
+            setError(err instanceof Error ? err.message : "Failed to submit for verification. Please try again.");
         } finally {
             setUploading(false);
         }
@@ -207,6 +206,7 @@ export default function VerifyPage() {
 
                                         {filePreview ? (
                                             <div className="relative w-full aspect-video rounded-2xl overflow-hidden border-2 border-white shadow-xl">
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                                 <img src={filePreview} alt="Preview" className="w-full h-full object-cover" />
                                                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                                                     <p className="text-white font-bold text-sm">Change File</p>

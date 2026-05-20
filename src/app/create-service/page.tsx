@@ -23,6 +23,8 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -309,7 +311,13 @@ export default function CreateServicePage() {
                                         >
                                             {imagePreview ? (
                                                 <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-xl border-2 border-white">
-                                                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                                    <Image 
+                                                        src={imagePreview} 
+                                                        alt="Preview" 
+                                                        fill
+                                                        className="object-cover" 
+                                                        sizes="(max-width: 768px) 100vw, 50vw"
+                                                    />
                                                     <Button
                                                         type="button"
                                                         variant="destructive"

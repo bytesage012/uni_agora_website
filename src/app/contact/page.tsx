@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import {
-    MessageCircle,
     Mail,
     ArrowRight,
     Loader2,
@@ -16,7 +16,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -53,10 +53,10 @@ export default function ContactPage() {
             setStatus("success");
             toast.success("Message received! We'll get back to you shortly.");
             setFormData({ name: "", email: "", subject: "general", message: "" });
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Submission error:", err);
             setStatus("error");
-            const msg = err.message || "Failed to send message.";
+            const msg = err instanceof Error ? err.message : "Failed to send message.";
             setErrorMessage(msg);
             toast.error(msg);
         }

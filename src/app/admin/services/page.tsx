@@ -5,10 +5,7 @@ import { useRouter } from "next/navigation";
 import {
     ShoppingBag,
     Search,
-    CheckCircle2,
-    AlertCircle,
     Loader2,
-    ExternalLink,
     Star,
     Trash2,
     ArrowLeft,
@@ -23,7 +20,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
