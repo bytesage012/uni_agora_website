@@ -31,6 +31,7 @@ interface Profile {
     full_name: string;
     is_freelancer: boolean;
     verification_status: string;
+    image_url?: string;
 }
 
 interface Conversation {
