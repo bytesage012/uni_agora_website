@@ -27,12 +27,31 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 
 
+interface Profile {
+    full_name: string;
+    is_freelancer: boolean;
+    verification_status: string;
+}
+
+interface Conversation {
+    id: string;
+    updated_at: string;
+    other_participant_name: string;
+}
+
+interface RecentPost {
+    id: string;
+    title: string;
+    category: string;
+    created_at: string;
+}
+
 export default function DashboardPage() {
     const router = useRouter();
-    const [profile, setProfile] = useState<unknown>(null);
+    const [profile, setProfile] = useState<Profile | null>(null);
     const [stats, setStats] = useState({ serviceCount: 0 });
-    const [recentConversations, setRecentConversations] = useState<unknown[]>([]);
-    const [recentPosts, setRecentPosts] = useState<unknown[]>([]);
+    const [recentConversations, setRecentConversations] = useState<Conversation[]>([]);
+    const [recentPosts, setRecentPosts] = useState<RecentPost[]>([]);
 
     useEffect(() => {
         const fetchProfileAndStats = async () => {
