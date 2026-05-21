@@ -10,6 +10,7 @@ import {
     Clock
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { User } from "@supabase/supabase-js";
 import Navbar from "../../components/Navbar";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -42,7 +43,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
     const [newMessage, setNewMessage] = useState("");
-    const [currentUser, setCurrentUser] = useState<unknown>(null);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {

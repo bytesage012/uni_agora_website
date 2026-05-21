@@ -18,6 +18,7 @@ import {
     Shield,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { User } from "@supabase/supabase-js";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { toast } from "sonner";
@@ -102,7 +103,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
     const [loading, setLoading] = useState(true);
     const [submittingReview, setSubmittingReview] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [currentUser, setCurrentUser] = useState<unknown>(null);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
 
     const [newRating, setNewRating] = useState(5);
     const [newComment, setNewComment] = useState("");

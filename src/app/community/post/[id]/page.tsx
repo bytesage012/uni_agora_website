@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { User } from "@supabase/supabase-js";
 import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
 import { toast } from "sonner";
@@ -57,7 +58,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     const [commenting, setCommenting] = useState(false);
     const [newComment, setNewComment] = useState("");
     const [error, setError] = useState<string | null>(null);
-    const [currentUser, setCurrentUser] = useState<unknown>(null);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
