@@ -23,10 +23,21 @@ import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 
+interface AppNotification {
+    id: string;
+    user_id: string;
+    type: 'message' | 'reply' | 'system' | 'inquiry';
+    title: string;
+    content: string;
+    link?: string;
+    is_read: boolean;
+    created_at: string;
+}
+
 export default function NotificationsPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
-    const [notifications, setNotifications] = useState<unknown[]>([]);
+    const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
     useEffect(() => {
         const fetchAllNotifications = async () => {

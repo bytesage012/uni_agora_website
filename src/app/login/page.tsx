@@ -130,7 +130,7 @@ export default function LoginPage() {
                                     <FormItem className="space-y-2">
                                         <div className="flex justify-between items-center ml-1">
                                             <FormLabel className="text-sm font-bold text-primary">Password</FormLabel>
-                                            <Link href="/forgot-password" size="sm" className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors">
+                                            <Link href="/forgot-password" className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors">
                                                 Forgot Password?
                                             </Link>
                                         </div>
